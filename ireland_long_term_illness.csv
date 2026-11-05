@@ -1,0 +1,14 @@
+year,breakdown,group,percent_with_condition,comparable_with_2024
+2024,HSE region,All HSE Regions,42.2,True
+2024,HSE region,HSE Dublin and Midlands,40.8,True
+2024,HSE region,HSE Dublin and North East,41.0,True
+2024,HSE region,HSE Dublin and South East,44.1,True
+2024,HSE region,HSE Midwest,47.9,True
+2024,HSE region,HSE West and North West,43.2,True
+2024,HSE region,HSE South West,39.6,True
+2024,Sex,Both sexes,42.2,True
+2024,Sex,Male,39.7,True
+2024,Sex,Female,44.6,True
+2015,"Disability Status (2015, aged 15+)",Persons with a disability,79.0,False
+2015,"Disability Status (2015, aged 15+)",Persons without a disability,26.0,False
+2015,"Disability Status (2015, aged 15+)",All persons with or without a disability,32.0,False
