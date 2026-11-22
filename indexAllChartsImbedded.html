@@ -1,0 +1,2600 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head> 
+        <title>Does spending more on health buy a longer, healthier life?</title>
+        <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
+        <script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>
+        <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
+        <style>
+            body {margin:0; font-family:system-ui, sans-serif; background: #f2f3f5}
+            header {background: #1f2a37; color:white; padding :16px 28px;}
+            header h1 {margin:0; font-size:22px;}
+            header p {margin:4px 0 0; font-size:14px; color: #c9d1db;}
+            
+            .controls {position:sticky; top:0; z-index: 10; display: flex; flex-wrap:wrap; gap:28px; background: #fff; align-items: center; padding: 12px 28px; border-bottom: 1px solid #dde1e6;}
+            .controls label {font-weight: 600; margin-right: 6px;}
+            .controls select, .controls button {font: inherit; padding: 4px 8px;}
+            .controls input[type=range] {
+                vertical-align: middle; width: 220px; accent-color: #1f2a37;
+            }
+            .legend span {display: inline-flex; align-items: center; margin-right: 14px;}
+            .legend i {width: 12px; height: 12px; border-radius: 50%; margin-right: 5px; display: inline-block;}
+            .hint {color: #666; font-size: 13px;}
+            
+            main {max-width: 1440px; margin: 0 auto; padding: 20px 24px 40px; }
+            
+            .notes {display:grid; grid-template-columns :repeat(4, 1fr); gap:20px; margin-bottom: 20px;}
+            .note{background: #fff; border-radius:8px; padding: 14px 18px; border: 1px solid #e3e6ea;}
+            .note b {display:block; font-size: 26px;}
+            .note span {font-size: 13px; color: #555;}
+            
+            .grid {display: grid; grid-template-columns: repeat(12, 1fr); gap: 20px; }
+            .panel {background: white; border: 1px solid #e3e6ea; border-radius: 8px; padding: 16px; overflow-x: auto;}
+            .span-12{grid-column: span 12;}
+            .span-7{grid-column: span 7;}
+            .span-6{grid-column: span 6;}
+            .span-5{grid-column: span 5;}
+                        
+            .chapter {grid-column: span 12; margin: 18px 0 -6px; font-size: 20px; color: #1f2a37; display:flex; align-items:center; gap:10px}
+            .chapter span {display: inline-flex; align-items: center; justify-content: center; width:30px; height: 30px; border-radius: 50%; background: #1f2a37; color: #fff; font-size: 16px}
+            .chapter-note {grid-column: span 12; margin:4px 0 0; color:#333; font-size:18px; line-height: 1.6; max-width: 1000px;justify-self: center}
+            
+            .answer {margin-top: 24px; background: #1f2a37; color: #fff; border-radius: 8px; padding: 18px 22px; font-size: 17px; line-height: 1.5;}
+            .answer b {display: block; font-size: 19px; margin-bottom: 4px;}
+            
+            .sources {margin-top: 16px; padding:4px 4px 0; font-size:13px; color:#555; line-height:1.5;}
+            .sources b {display: block; font-size: 14px; color: #1f2a37; margin-bottom: 4px;}
+            .sources ul {margin:0; padding-left: 18px;}
+            .sources p {margin: 6px 0 0;}
+            .sources a {color:#1f2a37}
+            
+            
+            @media (max-width: 1200px) {
+                .grid > .panel {grid-column: span 12;}
+                .notes {grid-template-columns: repeat(2, 1fr);}
+            }
+        </style>
+    </head>
+    <body>
+        <header>
+            <h1> Does spending more on health buy a longer, healthier life?</h1>
+            <p>Health spending, life expectancy and healthy years for Ireland, compared with the UK, the US and the rest of the world.</p>
+        </header>
+        
+        <div class="controls">
+            <div>
+                <label for="pick">Compare with: </label>
+                <select id="pick">
+                    <option value="">(none)</option>
+                    <optgroup label="High-spending countries (shown in every graph)">
+                    <option>Australia</option>
+                    <option>Austria</option>
+                    <option>Belgium</option>
+                    <option>Canada</option>
+                    <option>Czechia</option>
+                    <option>Denmark</option>
+                    <option>Estonia</option>
+                    <option>Finland</option>
+                    <option>France</option>
+                    <option>Germany</option>
+                    <option>Israel</option>
+                    <option>Italy</option>
+                    <option>Japan</option>
+                    <option>Netherlands</option>
+                    <option>New Zealand</option>
+                    <option>Norway</option>
+                    <option>Portugal</option>
+                    <option>Qatar</option>
+                    <option>Singapore</option>
+                    <option>Slovenia</option>
+                    <option>South Korea</option>
+                    <option>Spain</option>
+                    <option>Sweden</option>
+                    <option>Switzerland</option>
+                    <option>United Arab Emirates</option>
+                    <option>Uruguay</option>
+                  </optgroup>
+                  <optgroup label="Other European countries (scatter and healthy-years graphs)">
+                    <option>Bulgaria</option>
+                    <option>Croatia</option>
+                    <option>Cyprus</option>
+                    <option>Greece</option>
+                    <option>Hungary</option>
+                    <option>Latvia</option>
+                    <option>Lithuania</option>
+                    <option>Malta</option>
+                    <option>Poland</option>
+                    <option>Romania</option>
+                    <option>Slovakia</option>
+                  </optgroup>
+                  <optgroup label="Lower-spending countries (scatter and paths graphs)">
+                    <option>China</option>
+                    <option>India</option>
+                    <option>Nigeria</option>
+                    </optgroup>
+                </select>
+                <button id="clear">Clear</button>
+            </div>
+            
+            <div>
+                <label for="year">Year:</label>
+                <input id="year" type="range" min="2000" max="2021" step="1" value="2019">
+                <b id="year-value">2019</b>
+            </div>    
+            
+            <div class="legend">
+                <span><i style="background:#1baf7a"></i>Ireland</span>
+                <span><i style="background:#2a78d6"></i>UK</span>
+                <span><i style="background:#eb6834"></i>US</span>
+                <span><i style="background:#444444"></i>Your Pick</span>
+            </div>
+            
+            <div class="hint"><i>Tip: Click a country in any graph, or pick one from the dropdown to compare. Not every country is in every graph.
+            </i></div>
+        </div>
+        
+        <main>
+            <section class="notes">
+              <div class="note"><b>+2.7 years</b><span>of life expectancy per doubling of health spending (2019)</span></div>  
+              <div class="note"><b>-6.5 years</b><span>US life expectancy below what its spending predicts (2019)</span></div> 
+              <div class="note"><b>76.5 to 82.0</b><span>Ireland's increased life expectancy, 2000 to 2021: from below the UK and US, to above both</span></div>  
+              <div class="note"><b>+6.4 vs +4.2</b><span>Ireland's healthy years v life expectancy gained from 2004 to 2019</span></div>  
+            </section>
+            
+            <section class="grid">
+                <h2 class="chapter"><span>1</span>Spending buys years, but only up to a point</h2>
+                <p class="chapter-note">Across the world, countries that spend more on their health tend to live longer. The question is whether that point holds at every level of spending, or whether the gains level off for the countries that spend the most. </p>
+                <div class="panel span-7"><div id="lifeExpVsHce"></div></div>
+                <div class="panel span-5"><div id="actualVsExpectedLifeExp"></div></div>
+                
+                <p class="chapter-note">Overall, higher spending comes with longer lives up to about $2,000 per person. Above that most countries live 80-85 years no matter what they spend. Some countries even live less than their spending predicts, like the US with -6.5 years less than expected. However, a single year cannot show how countries got there, or how well they managed when Covid-19 hit. </p>
+                
+                <h2 class="chapter"><span>2</span>Ireland got more for its money than the US</h2>
+            
+                <div class="panel span-6"><div id="lifeExpVsHceOverTime"></div></div>
+                <div class="panel span-6"><div id="covidChanges"></div></div>
+                
+                <p class="chapter-note">Over the years, Ireland went from below the UK and the US to above both, while spending less than half as much as the US, and lost less life expectancy during the pandemic. However, life expectancy alone cannot tell us whether those extra years were lived in good health. These last two charts do not show spending, but test the "healthier" half of the question.</p>
+            
+                <h2 class="chapter"><span>3</span>Ireland's extra years were healthy ones</h2>
+            
+                <div class="panel span-12"><div id="irishHealthyVsLifeExp"></div></div>
+                <div class="panel span-12"><div id="healthyVsUnhealthy"></div>
+                </div>
+             
+            </section>
+            
+            <section class="answer">
+                <b>So, does spending more on healthcare buy a longer, healthier life?</b>
+                Up to about $2,000 per person, strongly. Above that, barely. Ireland lives longer than the US on less than half the spending, and up to 2019 its healthy years grew even faster than its life expectancy. 
+            </section>
+            
+            <section class="sources">
+                <b>Sources</b>
+                <ul>
+                    <li>Health spending (total, government, and private shares): WHO Global Health Expenditure Database, via <a href="https://raw.githubusercontent.com/rfordatascience/tidytuesday/main/data/2026/2026-04-21/health_spending.csv">Tidy Tuesday</a></li>
+                    <li>Life expectancy at birth: <a href="https://raw.githubusercontent.com/rfordatascience/tidytuesday/main/data/2023/2023-12-05/life_expectancy.csv">Our World in Data via Tidy Tuesday</a></li>
+                    <li>Population: World Bank, total population via <a href="https://github.com/datasets/population">github.com/datasets/population</a></li>
+                    <li>Healthy life years and life expectancy by sex (Europe): <a href="https://ec.europa.eu/eurostat/databrowser/view/hlth_hlye/default/table">Eurostat, hlth_hlye</a></li>
+                    <li>Joined and processed data used by these charts: <a href="https://github.com/annac-294/InfoVisDataSources">github.com/annac-294/InfoVisDataSources</a></li>
+                </ul>
+            </section>
+            
+        </main>
+        
+        <script>
+            // Chart specs are written into the page (instead of loaded from infoVis/*.json)
+            // because browsers block a page opened by double-clicking from reading other local files.
+
+            // lifeExpVsHce.json
+            const lifeExpVsHce = {
+              "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+              "title": {
+                "text": "More Spending, Longer Lives, But Each Extra Year Costs More",
+                "subtitle": [
+                  "",
+                  "Each dot is a country. The line shows the life expectancy for each level of spending (2019).",
+                  "Spending is on a log scale, so each step to the right doubles spending.",
+                  ""
+                ],
+                "anchor": "start",
+                "fontSize": 15,
+                "subtitleFontSize": 12,
+                "subtitlePadding": 6
+              },
+              "data": {
+                "url": "https://raw.githubusercontent.com/annac-294/InfoVisDataSources/main/health_main.csv",
+                "format": {
+                  "type": "csv",
+                  "parse": {
+                    "year": "number",
+                    "spend_per_person_usd": "number",
+                    "life_expectancy": "number",
+                    "population": "number",
+                    "expected_life_expectancy": "number"
+                  }
+                }
+              },
+              "params": [
+                {
+                  "name": "pick",
+                  "value": null
+                },
+                {
+                  "name": "year_slider",
+                  "value": 2019
+                }
+              ],
+              "transform": [
+                {
+                  "filter": "datum.year == year_slider"
+                },
+                {
+                  "filter": "datum.spend_per_person_usd > 0"
+                },
+                {
+                  "filter": "datum.life_expectancy > 0"
+                },
+                {
+                  "calculate": "datum.label + ' (' + datum.year + '):  $' + format(datum.spend_per_person_usd, ',.0f') + ' per person on health,  life expectancy ' + format(datum.life_expectancy, '.1f') + ' years'",
+                  "as": "readout"
+                }
+              ],
+              "vconcat": [
+                {
+                  "width": 560,
+                  "height": 270,
+                  "layer": [
+                    {
+                      "mark": {
+                        "type": "circle",
+                        "size": 80
+                      },
+                      "encoding": {
+                        "x": {
+                          "field": "spend_per_person_usd",
+                          "type": "quantitative",
+                          "scale": {
+                            "type": "log",
+                            "domain": [
+                              4,
+                              20000
+                            ]
+                          },
+                          "axis": {
+                            "title": "Health spending per person (US$, log scale)",
+                            "format": "$,.0f",
+                            "values": [
+                              5,
+                              10,
+                              30,
+                              100,
+                              300,
+                              1000,
+                              3000,
+                              10000
+                            ]
+                          }
+                        },
+                        "y": {
+                          "field": "life_expectancy",
+                          "type": "quantitative",
+                          "scale": {
+                            "domain": [
+                              40,
+                              90
+                            ]
+                          },
+                          "axis": {
+                            "title": "Life expectancy at birth (years)"
+                          }
+                        },
+                        "color": {
+                          "condition": [
+                            {
+                              "test": "datum.label == 'Ireland'",
+                              "value": "#1baf7a"
+                            },
+                            {
+                              "test": "datum.label == 'UK'",
+                              "value": "#2a78d6"
+                            },
+                            {
+                              "test": "datum.label == 'US'",
+                              "value": "#eb6834"
+                            },
+                            {
+                              "test": "datum.label== pick",
+                              "value": "#444444"
+                            }
+                          ],
+                          "value": "#bbbbbb"
+                        },
+                        "opacity": {
+                          "condition": [
+                            {
+                              "test": "indexof(['Ireland', 'UK', 'US'], datum.label) >= 0",
+                              "value": 1
+                            },
+                            {
+                              "test": "datum.label== pick",
+                              "value": 1
+                            }
+                          ],
+                          "value": 0.5
+                        },
+                        "order": {
+                          "condition": [
+                            {
+                              "test": "datum.label == 'Ireland'",
+                              "value": 4
+                            },
+                            {
+                              "test": "datum.label == 'UK' || datum.label == 'US'",
+                              "value": 3
+                            },
+                            {
+                              "test": "datum.label== pick",
+                              "value": 2
+                            }
+                          ],
+                          "value": 1
+                        },
+                        "tooltip": [
+                          {
+                            "field": "label",
+                            "type": "nominal",
+                            "title": "Country"
+                          },
+                          {
+                            "field": "year",
+                            "type": "ordinal",
+                            "title": "Year"
+                          },
+                          {
+                            "field": "spend_per_person_usd",
+                            "type": "quantitative",
+                            "title": "Spend per person ($)",
+                            "format": ",.0f"
+                          },
+                          {
+                            "field": "life_expectancy",
+                            "type": "quantitative",
+                            "title": "Life expectancy",
+                            "format": ".1f"
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "transform": [
+                        {
+                          "filter": "datum.expected_life_expectancy > 0"
+                        }
+                      ],
+                      "mark": {
+                        "type": "line",
+                        "color": "#444444",
+                        "strokeWidth": 2,
+                        "opacity": 0.7
+                      },
+                      "encoding": {
+                        "x": {
+                          "field": "spend_per_person_usd",
+                          "type": "quantitative"
+                        },
+                        "y": {
+                          "field": "expected_life_expectancy",
+                          "type": "quantitative"
+                        },
+                        "order": {
+                          "field": "spend_per_person_usd",
+                          "type": "quantitative"
+                        }
+                      },
+                      "name": "nopick_line"
+                    },
+                    {
+                      "name": "nopick_label",
+                      "data": {
+                        "values": [
+                          {}
+                        ]
+                      },
+                      "transform": [
+                        {
+                          "filter": "year_slider == 2019"
+                        }
+                      ],
+                      "mark": {
+                        "type": "text",
+                        "align": "right",
+                        "dy": 0,
+                        "fontSize": 12,
+                        "fontWeight": "bold",
+                        "color": "#444444",
+                        "baseline": "middle",
+                        "dx": -6
+                      },
+                      "encoding": {
+                        "x": {
+                          "datum": 15
+                        },
+                        "y": {
+                          "datum": 60
+                        },
+                        "text": {
+                          "value": "Expected"
+                        }
+                      }
+                    },
+                    {
+                      "data": {
+                        "values": [
+                          {
+                            "x": 30,
+                            "x2": 60,
+                            "y": 62.42,
+                            "y2": 62.42
+                          },
+                          {
+                            "x": 60,
+                            "x2": 60,
+                            "y": 62.42,
+                            "y2": 65.09
+                          }
+                        ]
+                      },
+                      "transform": [
+                        {
+                          "filter": "year_slider == 2019"
+                        }
+                      ],
+                      "mark": {
+                        "type": "rule",
+                        "color": "#1f2a37",
+                        "strokeWidth": 2
+                      },
+                      "encoding": {
+                        "x": {
+                          "field": "x",
+                          "type": "quantitative"
+                        },
+                        "x2": {
+                          "field": "x2"
+                        },
+                        "y": {
+                          "field": "y",
+                          "type": "quantitative"
+                        },
+                        "y2": {
+                          "field": "y2"
+                        }
+                      }
+                    },
+                    {
+                      "data": {
+                        "values": [
+                          {
+                            "x": 30,
+                            "x2": 60,
+                            "y": 62.42,
+                            "y2": 62.42
+                          },
+                          {
+                            "x": 60,
+                            "x2": 60,
+                            "y": 62.42,
+                            "y2": 65.09
+                          }
+                        ]
+                      },
+                      "transform": [
+                        {
+                          "filter": "year_slider == 2019"
+                        }
+                      ],
+                      "mark": {
+                        "type": "rule",
+                        "color": "#1f2a37",
+                        "strokeWidth": 2
+                      },
+                      "encoding": {
+                        "x": {
+                          "field": "x",
+                          "type": "quantitative"
+                        },
+                        "x2": {
+                          "field": "x2"
+                        },
+                        "y": {
+                          "field": "y",
+                          "type": "quantitative"
+                        },
+                        "y2": {
+                          "field": "y2"
+                        }
+                      }
+                    },
+                    {
+                      "data": {
+                        "values": [
+                          {
+                            "x": 60,
+                            "y": 62.42
+                          }
+                        ]
+                      },
+                      "transform": [
+                        {
+                          "filter": "year_slider == 2019"
+                        }
+                      ],
+                      "mark": {
+                        "type": "text",
+                        "align": "center",
+                        "baseline": "middle",
+                        "dx": -57,
+                        "dy": -57,
+                        "fontSize": 12,
+                        "fontWeight": "bold",
+                        "color": "#1f2a37",
+                        "lineBreak": "\n",
+                        "stroke": "white",
+                        "strokeWidth": 3,
+                        "strokeOpacity": 0.9
+                      },
+                      "encoding": {
+                        "x": {
+                          "field": "x",
+                          "type": "quantitative"
+                        },
+                        "y": {
+                          "field": "y",
+                          "type": "quantitative"
+                        },
+                        "text": {
+                          "value": "$30 to $60\n= +2.7 years"
+                        }
+                      }
+                    },
+                    {
+                      "data": {
+                        "values": [
+                          {
+                            "x": 60,
+                            "y": 62.42
+                          }
+                        ]
+                      },
+                      "transform": [
+                        {
+                          "filter": "year_slider == 2019"
+                        }
+                      ],
+                      "mark": {
+                        "type": "text",
+                        "align": "center",
+                        "baseline": "middle",
+                        "dx": -57,
+                        "dy": -57,
+                        "fontSize": 12,
+                        "fontWeight": "bold",
+                        "color": "#1f2a37",
+                        "lineBreak": "\n"
+                      },
+                      "encoding": {
+                        "x": {
+                          "field": "x",
+                          "type": "quantitative"
+                        },
+                        "y": {
+                          "field": "y",
+                          "type": "quantitative"
+                        },
+                        "text": {
+                          "value": "$30 to $60\n= +2.7 years"
+                        }
+                      }
+                    },
+                    {
+                      "data": {
+                        "values": [
+                          {
+                            "x": 500,
+                            "x2": 1000,
+                            "y": 73.23,
+                            "y2": 73.23
+                          },
+                          {
+                            "x": 1000,
+                            "x2": 1000,
+                            "y": 73.23,
+                            "y2": 75.9
+                          }
+                        ]
+                      },
+                      "transform": [
+                        {
+                          "filter": "year_slider == 2019"
+                        }
+                      ],
+                      "mark": {
+                        "type": "rule",
+                        "color": "#1f2a37",
+                        "strokeWidth": 2
+                      },
+                      "encoding": {
+                        "x": {
+                          "field": "x",
+                          "type": "quantitative"
+                        },
+                        "x2": {
+                          "field": "x2"
+                        },
+                        "y": {
+                          "field": "y",
+                          "type": "quantitative"
+                        },
+                        "y2": {
+                          "field": "y2"
+                        }
+                      }
+                    },
+                    {
+                      "data": {
+                        "values": [
+                          {
+                            "x": 1000,
+                            "y": 73.23
+                          }
+                        ]
+                      },
+                      "transform": [
+                        {
+                          "filter": "year_slider == 2019"
+                        }
+                      ],
+                      "mark": {
+                        "type": "text",
+                        "align": "center",
+                        "baseline": "middle",
+                        "dx": -38,
+                        "dy": -66,
+                        "fontSize": 12,
+                        "fontWeight": "bold",
+                        "color": "#1f2a37",
+                        "lineBreak": "\n",
+                        "stroke": "white",
+                        "strokeWidth": 3,
+                        "strokeOpacity": 0.9
+                      },
+                      "encoding": {
+                        "x": {
+                          "field": "x",
+                          "type": "quantitative"
+                        },
+                        "y": {
+                          "field": "y",
+                          "type": "quantitative"
+                        },
+                        "text": {
+                          "value": "$500 to $1,000\n= +2.7 years"
+                        }
+                      }
+                    },
+                    {
+                      "data": {
+                        "values": [
+                          {
+                            "x": 1000,
+                            "y": 73.23
+                          }
+                        ]
+                      },
+                      "transform": [
+                        {
+                          "filter": "year_slider == 2019"
+                        }
+                      ],
+                      "mark": {
+                        "type": "text",
+                        "align": "center",
+                        "baseline": "middle",
+                        "dx": -38,
+                        "dy": -66,
+                        "fontSize": 12,
+                        "fontWeight": "bold",
+                        "color": "#1f2a37",
+                        "lineBreak": "\n"
+                      },
+                      "encoding": {
+                        "x": {
+                          "field": "x",
+                          "type": "quantitative"
+                        },
+                        "y": {
+                          "field": "y",
+                          "type": "quantitative"
+                        },
+                        "text": {
+                          "value": "$500 to $1,000\n= +2.7 years"
+                        }
+                      }
+                    },
+                    {
+                      "data": {
+                        "values": [
+                          {}
+                        ]
+                      },
+                      "mark": {
+                        "type": "rule",
+                        "strokeDash": [
+                          4,
+                          4
+                        ],
+                        "color": "grey"
+                      },
+                      "encoding": {
+                        "x": {
+                          "datum": 2000
+                        }
+                      }
+                    },
+                    {
+                      "data": {
+                        "values": [
+                          {}
+                        ]
+                      },
+                      "mark": {
+                        "type": "text",
+                        "align": "left",
+                        "dx": 6,
+                        "fontSize": 12,
+                        "color": "grey",
+                        "lineBreak": "\n"
+                      },
+                      "encoding": {
+                        "x": {
+                          "datum": 2000
+                        },
+                        "y": {
+                          "datum": 48
+                        },
+                        "text": {
+                          "value": "Above $2,000 per person (for next charts):\n24 of 29 countries live 80-85 years"
+                        }
+                      }
+                    },
+                    {
+                      "transform": [
+                        {
+                          "filter": "datum.label == pick"
+                        },
+                        {
+                          "filter": "indexof(['Ireland', 'UK', 'US'], datum.label) < 0"
+                        }
+                      ],
+                      "mark": {
+                        "type": "text",
+                        "align": "left",
+                        "dx": 7,
+                        "dy": -8,
+                        "fontSize": 12,
+                        "fontWeight": "bold",
+                        "color": "#444444"
+                      },
+                      "encoding": {
+                        "x": {
+                          "field": "spend_per_person_usd",
+                          "type": "quantitative"
+                        },
+                        "y": {
+                          "field": "life_expectancy",
+                          "type": "quantitative"
+                        },
+                        "text": {
+                          "field": "label",
+                          "type": "nominal"
+                        }
+                      }
+                    },
+                    {
+                      "transform": [
+                        {
+                          "filter": "datum.label == 'Ireland'"
+                        }
+                      ],
+                      "mark": {
+                        "type": "text",
+                        "align": "center",
+                        "baseline": "middle",
+                        "dx": 5,
+                        "dy": 18,
+                        "fontSize": 12,
+                        "fontWeight": "bold",
+                        "color": "#1baf7a"
+                      },
+                      "encoding": {
+                        "x": {
+                          "field": "spend_per_person_usd",
+                          "type": "quantitative"
+                        },
+                        "y": {
+                          "field": "life_expectancy",
+                          "type": "quantitative"
+                        },
+                        "text": {
+                          "field": "label",
+                          "type": "nominal"
+                        }
+                      }
+                    },
+                    {
+                      "transform": [
+                        {
+                          "filter": "datum.label == 'UK'"
+                        }
+                      ],
+                      "mark": {
+                        "type": "text",
+                        "align": "center",
+                        "baseline": "middle",
+                        "dx": 4,
+                        "dy": -20,
+                        "fontSize": 12,
+                        "fontWeight": "bold",
+                        "color": "#2a78d6"
+                      },
+                      "encoding": {
+                        "x": {
+                          "field": "spend_per_person_usd",
+                          "type": "quantitative"
+                        },
+                        "y": {
+                          "field": "life_expectancy",
+                          "type": "quantitative"
+                        },
+                        "text": {
+                          "field": "label",
+                          "type": "nominal"
+                        }
+                      }
+                    },
+                    {
+                      "transform": [
+                        {
+                          "filter": "datum.label == 'US'"
+                        }
+                      ],
+                      "mark": {
+                        "type": "text",
+                        "align": "center",
+                        "baseline": "middle",
+                        "dx": 15,
+                        "dy": 0,
+                        "fontSize": 12,
+                        "fontWeight": "bold",
+                        "color": "#eb6834"
+                      },
+                      "encoding": {
+                        "x": {
+                          "field": "spend_per_person_usd",
+                          "type": "quantitative"
+                        },
+                        "y": {
+                          "field": "life_expectancy",
+                          "type": "quantitative"
+                        },
+                        "text": {
+                          "field": "label",
+                          "type": "nominal"
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "width": 560,
+                  "height": 44,
+                  "layer": [
+                    {
+                      "transform": [
+                        {
+                          "filter": "datum.label == 'Ireland'"
+                        }
+                      ],
+                      "mark": {
+                        "type": "text",
+                        "align": "left",
+                        "x": 0,
+                        "y": 10,
+                        "fontSize": 14,
+                        "fontWeight": "bold",
+                        "color": "#1baf7a"
+                      },
+                      "encoding": {
+                        "text": {
+                          "field": "readout",
+                          "type": "nominal"
+                        }
+                      }
+                    },
+                    {
+                      "transform": [
+                        {
+                          "filter": "datum.label == pick"
+                        }
+                      ],
+                      "mark": {
+                        "type": "text",
+                        "align": "left",
+                        "x": 0,
+                        "y": 34,
+                        "fontSize": 14,
+                        "fontWeight": "bold",
+                        "color": "#444444"
+                      },
+                      "encoding": {
+                        "text": {
+                          "field": "readout",
+                          "type": "nominal"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ],
+              "config": {
+                "axis": {
+                  "labelFontSize": 12,
+                  "titleFontSize": 14,
+                  "titlePadding": 10,
+                  "gridColor": "#eeeeee",
+                  "gridWidth": 0.5
+                },
+                "view": {
+                  "stroke": null
+                }
+              }
+            };
+
+            // actualVsExpectedLifeExp.json
+            const actualVsExpectedLifeExp = {
+              "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+              "title": {
+                "text": "The US Lives 6.5 Years Less Than Its Spending Predicts",
+                "subtitle": [
+                  "",
+                  "Actual value minus expected life expectancy, 2019",
+                  "Countries spending over $2,000 per person, with over 1 million people.",
+                  "The expected line keeps rising, so it overestimates the biggest spenders.",
+                  ""
+                ],
+                "anchor": "start",
+                "fontSize": 15,
+                "subtitleFontSize": 12,
+                "subtitlePadding": 6
+              },
+              "width": 330,
+              "height": 350,
+              "data": {
+                "url": "https://raw.githubusercontent.com/annac-294/InfoVisDataSources/main/health_main.csv",
+                "format": {
+                  "type": "csv",
+                  "parse": {
+                    "year": "number",
+                    "spend_per_person_usd": "number",
+                    "population": "number",
+                    "life_expectancy": "number",
+                    "expected_life_expectancy": "number",
+                    "years_vs_expected": "number"
+                  }
+                }
+              },
+              "transform": [
+                {
+                  "filter": "datum.year == 2019"
+                },
+                {
+                  "filter": "datum.spend_per_person_usd > 2000"
+                },
+                {
+                  "filter": "datum.population >= 1000000"
+                },
+                {
+                  "calculate": "max(datum.years_vs_expected, 0)",
+                  "as": "label_x"
+                }
+              ],
+              "layer": [
+                {
+                  "mark": "bar",
+                  "encoding": {
+                    "y": {
+                      "field": "label",
+                      "type": "nominal",
+                      "sort": {
+                        "op": "mean",
+                        "field": "years_vs_expected",
+                        "order": "descending"
+                      },
+                      "axis": {
+                        "title": null
+                      }
+                    },
+                    "x": {
+                      "field": "years_vs_expected",
+                      "type": "quantitative",
+                      "axis": {
+                        "title": "Years above (+) or below (-) expected"
+                      }
+                    },
+                    "color": {
+                      "condition": [
+                        {
+                          "test": "datum.label == 'Ireland'",
+                          "value": "#1baf7a"
+                        },
+                        {
+                          "test": "datum.label == 'UK'",
+                          "value": "#2a78d6"
+                        },
+                        {
+                          "test": "datum.label == 'US'",
+                          "value": "#eb6834"
+                        },
+                        {
+                          "test": "datum.label== pick",
+                          "value": "#444444"
+                        }
+                      ],
+                      "value": "#bbbbbb"
+                    },
+                    "tooltip": [
+                      {
+                        "field": "label",
+                        "type": "nominal",
+                        "title": "Country"
+                      },
+                      {
+                        "field": "life_expectancy",
+                        "type": "quantitative",
+                        "title": "Actual life expectancy",
+                        "format": ".1f"
+                      },
+                      {
+                        "field": "expected_life_expectancy",
+                        "type": "quantitative",
+                        "title": "Expected",
+                        "format": ".1f"
+                      },
+                      {
+                        "field": "years_vs_expected",
+                        "type": "quantitative",
+                        "title": "Difference (years)",
+                        "format": "+.1f"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "mark": {
+                    "type": "rule",
+                    "color": "black",
+                    "strokeWidth": 1.5
+                  },
+                  "encoding": {
+                    "x": {
+                      "datum": 0
+                    }
+                  }
+                },
+                {
+                  "mark": {
+                    "type": "text",
+                    "fontSize": 12,
+                    "fontWeight": "bold",
+                    "dx": 5,
+                    "align": "left"
+                  },
+                  "encoding": {
+                    "y": {
+                      "field": "label",
+                      "type": "nominal",
+                      "sort": {
+                        "op": "mean",
+                        "field": "years_vs_expected",
+                        "order": "descending"
+                      }
+                    },
+                    "x": {
+                      "field": "label_x",
+                      "type": "quantitative",
+                      "align": "left"
+                    },
+                    "text": {
+                      "condition": {
+                        "test": "indexof(['Ireland', 'UK', 'US'], datum.label)>=0 || datum.label == pick",
+                        "field": "years_vs_expected",
+                        "type": "quantitative",
+                        "format": "+.1f"
+                      },
+                      "value": ""
+                    },
+                    "color": {
+                      "condition": [
+                        {
+                          "test": "datum.label == 'Ireland'",
+                          "value": "#1baf7a"
+                        },
+                        {
+                          "test": "datum.label == 'UK'",
+                          "value": "#2a78d6"
+                        },
+                        {
+                          "test": "datum.label == 'US'",
+                          "value": "#eb6834"
+                        },
+                        {
+                          "test": "datum.label== pick",
+                          "value": "#444444"
+                        }
+                      ],
+                      "value": "#bbbbbb"
+                    }
+                  }
+                }
+              ],
+              "config": {
+                "axis": {
+                  "labelFontSize": 12,
+                  "titleFontSize": 14,
+                  "titlePadding": 10,
+                  "grid": false
+                },
+                "view": {
+                  "stroke": null
+                }
+              },
+              "params": [
+                {
+                  "name": "pick",
+                  "value": null
+                }
+              ]
+            };
+
+            // covidChanges.json
+            const covidChanges = {
+              "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+              "title": {
+                "text": [
+                  "US Life Expectancy Fell 1.9 Years from 2019 to 2021",
+                  "whereas Ireland's Fell 0.3"
+                ],
+                "subtitle": [
+                  "",
+                  "Life expectancy at birth for 2019 and 2021.",
+                  "Based on countries spending over $2,000 per person, with over 1 million people.",
+                  ""
+                ],
+                "anchor": "start",
+                "fontSize": 15,
+                "subtitleFontSize": 12,
+                "subtitlePadding": 6
+              },
+              "width": 360,
+              "height": 280,
+              "data": {
+                "url": "https://raw.githubusercontent.com/annac-294/InfoVisDataSources/main/health_main.csv",
+                "format": {
+                  "type": "csv",
+                  "parse": {
+                    "year": "number",
+                    "spend_per_person_usd": "number",
+                    "population": "number",
+                    "life_expectancy": "number"
+                  }
+                }
+              },
+              "transform": [
+                {
+                  "filter": "datum.year == 2019 || datum.year == 2021"
+                },
+                {
+                  "calculate": "datum.year == 2019 ? datum.spend_per_person_usd : 0",
+                  "as": "spend_2019"
+                },
+                {
+                  "calculate": "datum.year == 2019 ? datum.life_expectancy : 0",
+                  "as": "le_2019"
+                },
+                {
+                  "joinaggregate": [
+                    {
+                      "op": "max",
+                      "field": "spend_2019",
+                      "as": "spend_2019_max"
+                    },
+                    {
+                      "op": "max",
+                      "field": "population",
+                      "as": "population_max"
+                    },
+                    {
+                      "op": "max",
+                      "field": "le_2019",
+                      "as": "le_2019_max"
+                    }
+                  ],
+                  "groupby": [
+                    "label"
+                  ]
+                },
+                {
+                  "filter": "datum.spend_2019_max > 2000"
+                },
+                {
+                  "filter": "datum.population_max >= 1000000"
+                },
+                {
+                  "calculate": "datum.life_expectancy - datum.le_2019_max",
+                  "as": "covid_change"
+                },
+                {
+                  "calculate": "datum.year == 2019 ? '2019 (before Covid-19)' : '2021'",
+                  "as": "period"
+                }
+              ],
+              "encoding": {
+                "x": {
+                  "field": "period",
+                  "type": "ordinal",
+                  "sort": [
+                    "2019 (before Covid-19)",
+                    "2021"
+                  ],
+                  "scale": {
+                    "padding": 0.5
+                  },
+                  "axis": {
+                    "title": null,
+                    "labelAngle": 0,
+                    "labelFontSize": 13,
+                    "labelFontWeight": "bold",
+                    "orient": "top",
+                    "domain": false,
+                    "ticks": false,
+                    "labelLimit": 250
+                  }
+                },
+                "y": {
+                  "field": "life_expectancy",
+                  "type": "quantitative",
+                  "scale": {
+                    "domain": [
+                      75,
+                      85
+                    ]
+                  },
+                  "axis": {
+                    "title": "Life expectancy at birth (years, axis starts at 75)"
+                  }
+                },
+                "color": {
+                  "condition": [
+                    {
+                      "test": "datum.label == 'Ireland'",
+                      "value": "#1baf7a"
+                    },
+                    {
+                      "test": "datum.label == 'UK'",
+                      "value": "#2a78d6"
+                    },
+                    {
+                      "test": "datum.label == 'US'",
+                      "value": "#eb6834"
+                    },
+                    {
+                      "test": "datum.label== pick",
+                      "value": "#444444"
+                    }
+                  ],
+                  "value": "#d9d9d9"
+                }
+              },
+              "layer": [
+                {
+                  "mark": {
+                    "type": "line",
+                    "strokeWidth": 1
+                  },
+                  "encoding": {
+                    "detail": {
+                      "field": "label",
+                      "type": "nominal"
+                    },
+                    "tooltip": [
+                      {
+                        "field": "label",
+                        "type": "nominal",
+                        "title": "Country"
+                      },
+                      {
+                        "field": "covid_change",
+                        "type": "quantitative",
+                        "title": "Change since 2019 (years)",
+                        "format": "+.1f"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "mark": {
+                    "type": "circle",
+                    "size": 30,
+                    "opacity": 1
+                  },
+                  "encoding": {
+                    "tooltip": [
+                      {
+                        "field": "label",
+                        "type": "nominal",
+                        "title": "Country"
+                      },
+                      {
+                        "field": "year",
+                        "type": "ordinal",
+                        "title": "Year"
+                      },
+                      {
+                        "field": "life_expectancy",
+                        "type": "quantitative",
+                        "title": "Life expectancy",
+                        "format": ".1f"
+                      },
+                      {
+                        "field": "covid_change",
+                        "type": "quantitative",
+                        "title": "Change since 2019 (years)",
+                        "format": "+.1f"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "transform": [
+                    {
+                      "filter": "indexof(['Ireland', 'UK', 'US'], datum.label)>=0 || datum.label == pick"
+                    }
+                  ],
+                  "mark": {
+                    "type": "line",
+                    "strokeWidth": 3
+                  },
+                  "encoding": {
+                    "detail": {
+                      "field": "label",
+                      "type": "nominal"
+                    }
+                  }
+                },
+                {
+                  "mark": {
+                    "type": "circle",
+                    "size": 60,
+                    "opacity": 1
+                  },
+                  "encoding": {
+                    "tooltip": [
+                      {
+                        "field": "label",
+                        "type": "nominal",
+                        "title": "Country"
+                      },
+                      {
+                        "field": "year",
+                        "type": "ordinal",
+                        "title": "Year"
+                      },
+                      {
+                        "field": "life_expectancy",
+                        "type": "quantitative",
+                        "title": "Life expectancy",
+                        "format": ".1f"
+                      },
+                      {
+                        "field": "covid_change",
+                        "type": "quantitative",
+                        "title": "Change since 2019 (years)",
+                        "format": "+.1f"
+                      }
+                    ]
+                  },
+                  "transform": [
+                    {
+                      "filter": "indexof(['Ireland', 'UK', 'US'], datum.label)>=0 || datum.label == pick"
+                    }
+                  ]
+                },
+                {
+                  "transform": [
+                    {
+                      "filter": "datum.year == 2019"
+                    },
+                    {
+                      "filter": "indexof(['Ireland', 'UK', 'US'], datum.label)>=0 || datum.label == pick"
+                    },
+                    {
+                      "calculate": "datum.label + '  ' + format(datum.life_expectancy, '.1f')",
+                      "as": "start_label"
+                    }
+                  ],
+                  "mark": {
+                    "type": "text",
+                    "align": "right",
+                    "dx": -10,
+                    "fontSize": 12,
+                    "fontWeight": "bold"
+                  },
+                  "encoding": {
+                    "text": {
+                      "field": "start_label",
+                      "type": "nominal"
+                    }
+                  }
+                },
+                {
+                  "transform": [
+                    {
+                      "filter": "datum.year == 2021"
+                    },
+                    {
+                      "filter": "indexof(['Ireland', 'UK', 'US'], datum.label)>=0 || datum.label == pick"
+                    },
+                    {
+                      "calculate": "format(datum.life_expectancy, '.1f') + '  (' + format(datum.covid_change, '+.1f') + ')'",
+                      "as": "end_label"
+                    }
+                  ],
+                  "mark": {
+                    "type": "text",
+                    "align": "left",
+                    "dx": 10,
+                    "fontSize": 12,
+                    "fontWeight": "bold"
+                  },
+                  "encoding": {
+                    "text": {
+                      "field": "end_label",
+                      "type": "nominal"
+                    }
+                  }
+                }
+              ],
+              "config": {
+                "axis": {
+                  "labelFontSize": 12,
+                  "titleFontSize": 14,
+                  "titlePadding": 10
+                },
+                "axisX": {
+                  "grid": false
+                },
+                "view": {
+                  "stroke": null
+                },
+                "axisY": {
+                  "grid": false
+                }
+              },
+              "params": [
+                {
+                  "name": "pick",
+                  "value": null
+                }
+              ]
+            };
+
+            // irishHealthyVsLifeExp.json
+            const irishHealthyVsLifeExp = {
+              "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+              "title": {
+                "text": "Up to 2019, Ireland's Extra Years Were Healthy Years",
+                "subtitle": [
+                  "",
+                  "Healthy life years +6.4, life expectancy +4.2 (2004-2019), so years in poor health shrank.",
+                  "The survey method changed in 2020, so later years (faded) can't be compared with earlier ones.",
+                  "Life expectancy here is from Eurostat, so differs slightly from other charts.",
+                  ""
+                ],
+                "anchor": "start",
+                "fontSize": 15,
+                "subtitleFontSize": 12,
+                "subtitlePadding": 6
+              },
+              "width": 700,
+              "height": 240,
+              "data": {
+                "url": "https://raw.githubusercontent.com/annac-294/InfoVisDataSources/main/healthy_life_years.csv",
+                "format": {
+                  "type": "csv",
+                  "parse": {
+                    "year": "number",
+                    "healthy_life_years": "number",
+                    "life_expectancy": "number"
+                  }
+                }
+              },
+              "transform": [
+                {
+                  "filter": "datum.country_name == 'Ireland'"
+                },
+                {
+                  "filter": "datum.sex == 'Total'"
+                },
+                {
+                  "calculate": "datum.year <= 2019 ? 'Before 2020' : 'From 2020'",
+                  "as": "period"
+                },
+                {
+                  "fold": [
+                    "life_expectancy",
+                    "healthy_life_years"
+                  ],
+                  "as": [
+                    "measure_column",
+                    "years"
+                  ]
+                },
+                {
+                  "calculate": "datum.measure_column == 'life_expectancy' ? 'Life expectancy' : 'Healthy life years'",
+                  "as": "measure"
+                }
+              ],
+              "layer": [
+                {
+                  "mark": {
+                    "type": "rule",
+                    "strokeDash": [
+                      4,
+                      4
+                    ],
+                    "color": "grey"
+                  },
+                  "encoding": {
+                    "x": {
+                      "datum": 2019.5,
+                      "type": "quantitative",
+                      "scale": {
+                        "domain": [
+                          2004,
+                          2024
+                        ]
+                      }
+                    }
+                  }
+                },
+                {
+                  "mark": {
+                    "type": "text",
+                    "align": "center",
+                    "baseline": "bottom",
+                    "y": -6,
+                    "fontSize": 12,
+                    "color": "grey"
+                  },
+                  "encoding": {
+                    "x": {
+                      "datum": 2019.5,
+                      "type": "quantitative",
+                      "scale": {
+                        "domain": [
+                          2004,
+                          2024
+                        ]
+                      }
+                    },
+                    "text": {
+                      "value": "Survey method changed (2020)"
+                    }
+                  }
+                },
+                {
+                  "encoding": {
+                    "x": {
+                      "field": "year",
+                      "type": "quantitative",
+                      "scale": {
+                        "domain": [
+                          2004,
+                          2024
+                        ]
+                      },
+                      "axis": {
+                        "title": null,
+                        "format": "d",
+                        "values": [
+                          2004,
+                          2008,
+                          2012,
+                          2016,
+                          2019,
+                          2024
+                        ]
+                      }
+                    },
+                    "y": {
+                      "field": "years",
+                      "type": "quantitative",
+                      "scale": {
+                        "domain": [
+                          60,
+                          85
+                        ]
+                      },
+                      "axis": {
+                        "title": "Years (axis starts at 60)",
+                        "values": [
+                          60,
+                          65,
+                          70,
+                          75,
+                          80,
+                          85
+                        ]
+                      }
+                    },
+                    "color": {
+                      "field": "measure",
+                      "type": "nominal",
+                      "scale": {
+                        "domain": [
+                          "Life expectancy",
+                          "Healthy life years"
+                        ],
+                        "range": [
+                          "#444444",
+                          "#1baf7a"
+                        ]
+                      },
+                      "legend": null
+                    },
+                    "opacity": {
+                      "field": "period",
+                      "type": "nominal",
+                      "scale": {
+                        "domain": [
+                          "Before 2020",
+                          "From 2020"
+                        ],
+                        "range": [
+                          1,
+                          0.5
+                        ]
+                      },
+                      "legend": null
+                    }
+                  },
+                  "layer": [
+                    {
+                      "mark": {
+                        "type": "line",
+                        "strokeWidth": 2.5
+                      },
+                      "encoding": {
+                        "detail": {
+                          "field": "period",
+                          "type": "nominal"
+                        }
+                      }
+                    },
+                    {
+                      "mark": {
+                        "type": "circle",
+                        "size": 40,
+                        "opacity": 1
+                      },
+                      "encoding": {
+                        "tooltip": [
+                          {
+                            "field": "year",
+                            "type": "ordinal",
+                            "title": "Year"
+                          },
+                          {
+                            "field": "measure",
+                            "type": "nominal",
+                            "title": "Measure"
+                          },
+                          {
+                            "field": "years",
+                            "type": "quantitative",
+                            "title": "Years",
+                            "format": ".1f"
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "transform": [
+                        {
+                          "filter": "datum.year == 2024"
+                        }
+                      ],
+                      "mark": {
+                        "type": "text",
+                        "align": "left",
+                        "dx": 8,
+                        "fontSize": 12,
+                        "fontWeight": "bold"
+                      },
+                      "encoding": {
+                        "text": {
+                          "field": "measure",
+                          "type": "nominal"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ],
+              "config": {
+                "axis": {
+                  "labelFontSize": 12,
+                  "titleFontSize": 14,
+                  "titlePadding": 10,
+                  "gridColor": "#eeeeee",
+                  "gridWidth": 1
+                },
+                "view": {
+                  "stroke": null
+                },
+                "background": null
+              },
+              "params": [
+                {
+                  "name": "pick",
+                  "value": null
+                }
+              ]
+            };
+
+            // healthyVsUnhealthy.json
+            const healthyVsUnhealthy = {
+              "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+              "title": {
+                "text": "Irish Women Outlive Men by 3.3 Years, but Most of the Extra Years Are Unhealthy",
+                "subtitle": [
+                  "",
+                  "Healthy (dark) + unhealthy (light) = life expectancy (overall bar), 2024.",
+                  "Sorted by women's life expectancy.",
+                  "Dashed lines: EU average healthy years and life expectancy, to compare every country against.",
+                  "* Survey method changed in 2024 in this country; compare with care.",
+                  ""
+                ],
+                "anchor": "start",
+                "fontSize": 15,
+                "subtitleFontSize": 12,
+                "subtitlePadding": 6
+              },
+              "data": {
+                "url": "https://raw.githubusercontent.com/annac-294/InfoVisDataSources/main/healthy_life_years.csv",
+                "format": {
+                  "type": "csv",
+                  "parse": {
+                    "year": "number",
+                    "healthy_life_years": "number",
+                    "life_expectancy": "number"
+                  }
+                }
+              },
+              "transform": [
+                {
+                  "filter": "datum.year == 2024"
+                },
+                {
+                  "filter": "datum.sex != 'Total'"
+                },
+                {
+                  "filter": "datum.healthy_life_years > 0"
+                },
+                {
+                  "calculate": "round((datum.life_expectancy - datum.healthy_life_years) * 10) / 10",
+                  "as": "unhealthy_years"
+                },
+                {
+                  "calculate": "datum.sex == 'Females' ? 'Women' : 'Men'",
+                  "as": "sex_label"
+                },
+                {
+                  "calculate": "datum.country_name == 'European Union - 27 countries (from 2020)' ? 'EU average' : datum.country_name",
+                  "as": "country"
+                },
+                {
+                  "calculate": "datum.country_name == 'Ireland' ? 'Ireland' : datum.country == 'EU average' ? 'EU' : 'Other'",
+                  "as": "highlight"
+                },
+                {
+                  "calculate": "datum.series_break == 'True' ? datum.country + ' *' : datum.country",
+                  "as": "country"
+                },
+                {
+                  "fold": [
+                    "healthy_life_years",
+                    "unhealthy_years"
+                  ],
+                  "as": [
+                    "part_column",
+                    "years"
+                  ]
+                },
+                {
+                  "calculate": "datum.part_column == 'healthy_life_years' ? 'Healthy' : 'Unhealthy'",
+                  "as": "part"
+                },
+                {
+                  "calculate": "datum.part_column == 'healthy_life_years' ? 1 : 2",
+                  "as": "part_order"
+                },
+                {
+                  "calculate": "datum.highlight + ' ' + datum.part",
+                  "as": "colour_key"
+                }
+              ],
+              "facet": {
+                "column": {
+                  "field": "sex_label",
+                  "type": "nominal",
+                  "sort": [
+                    "Women",
+                    "Men"
+                  ],
+                  "title": null,
+                  "header": {
+                    "labelFontSize": 14,
+                    "labelFontWeight": "bold"
+                  }
+                }
+              },
+              "spec": {
+                "width": 400,
+                "height": {
+                  "step": 12
+                },
+                "layer": [
+                  {
+                    "transform": [
+                      {
+                        "filter": "datum.country_name == 'European Union - 27 countries (from 2020)' && datum.part == 'Healthy'"
+                      }
+                    ],
+                    "mark": {
+                      "type": "rule",
+                      "strokeDash": [
+                        4,
+                        3
+                      ],
+                      "color": "#5b6b7f",
+                      "strokeWidth": 1.2
+                    },
+                    "encoding": {
+                      "x": {
+                        "field": "healthy_life_years",
+                        "type": "quantitative"
+                      }
+                    }
+                  },
+                  {
+                    "transform": [
+                      {
+                        "filter": "datum.country_name == 'European Union - 27 countries (from 2020)' && datum.part == 'Healthy'"
+                      }
+                    ],
+                    "mark": {
+                      "type": "rule",
+                      "strokeDash": [
+                        4,
+                        3
+                      ],
+                      "color": "#5b6b7f",
+                      "strokeWidth": 1.2
+                    },
+                    "encoding": {
+                      "x": {
+                        "field": "life_expectancy",
+                        "type": "quantitative"
+                      }
+                    }
+                  },
+                  {
+                    "mark": "bar",
+                    "encoding": {
+                      "y": {
+                        "field": "country",
+                        "type": "nominal",
+                        "sort": {
+                          "op": "max",
+                          "field": "life_expectancy",
+                          "order": "descending"
+                        },
+                        "axis": {
+                          "title": null,
+                          "labelFontWeight": {
+                            "expr": "datum.value == 'EU average' || datum.value == 'Ireland' ? 'bold' : 'normal'"
+                          },
+                          "labelColor": {
+                            "expr": "datum.value == 'Ireland' ? '#1baf7a' : datum.value == 'EU average' ? '#5b6b7f' : '#333333'"
+                          }
+                        }
+                      },
+                      "x": {
+                        "field": "years",
+                        "type": "quantitative",
+                        "scale": {
+                          "domain": [
+                            0,
+                            90
+                          ]
+                        },
+                        "axis": {
+                          "title": "Years",
+                          "values": [
+                            0,
+                            20,
+                            40,
+                            60,
+                            80
+                          ]
+                        }
+                      },
+                      "color": {
+                        "field": "colour_key",
+                        "type": "nominal",
+                        "scale": {
+                          "domain": [
+                            "Ireland Healthy",
+                            "Ireland Unhealthy",
+                            "EU Healthy",
+                            "EU Unhealthy",
+                            "Other Healthy",
+                            "Other Unhealthy"
+                          ],
+                          "range": [
+                            "#1baf7a",
+                            "#a9dfc8",
+                            "#5b6b7f",
+                            "#c3ccd6",
+                            "#444444",
+                            "#bbbbbb"
+                          ]
+                        },
+                        "legend": null
+                      },
+                      "opacity": {
+                        "condition": [
+                          {
+                            "test": "datum.highlight != 'Other'",
+                            "value": 1
+                          },
+                          {
+                            "test": "datum.country_name == pick",
+                            "value": 1
+                          }
+                        ],
+                        "value": 0.3
+                      },
+                      "order": {
+                        "field": "part_order",
+                        "type": "quantitative"
+                      },
+                      "tooltip": [
+                        {
+                          "field": "country",
+                          "type": "nominal",
+                          "title": "Country"
+                        },
+                        {
+                          "field": "sex_label",
+                          "type": "nominal",
+                          "title": "Sex"
+                        },
+                        {
+                          "field": "healthy_life_years",
+                          "type": "quantitative",
+                          "title": "Healthy years",
+                          "format": ".1f"
+                        },
+                        {
+                          "field": "unhealthy_years",
+                          "type": "quantitative",
+                          "title": "Unhealthy years",
+                          "format": ".1f"
+                        },
+                        {
+                          "field": "life_expectancy",
+                          "type": "quantitative",
+                          "title": "Life expectancy",
+                          "format": ".1f"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "transform": [
+                      {
+                        "filter": "datum.part == 'Healthy'"
+                      },
+                      {
+                        "filter": "indexof(['Ireland', 'European Union - 27 countries (from 2020)'], datum.country_name) >= 0 || datum.country_name == pick"
+                      }
+                    ],
+                    "mark": {
+                      "type": "text",
+                      "align": "right",
+                      "dx": -4,
+                      "fontSize": 11,
+                      "fontWeight": "bold",
+                      "color": "white"
+                    },
+                    "encoding": {
+                      "y": {
+                        "field": "country",
+                        "type": "nominal",
+                        "sort": {
+                          "op": "max",
+                          "field": "life_expectancy",
+                          "order": "descending"
+                        }
+                      },
+                      "x": {
+                        "field": "healthy_life_years",
+                        "type": "quantitative"
+                      },
+                      "text": {
+                        "field": "healthy_life_years",
+                        "type": "quantitative",
+                        "format": ".1f"
+                      }
+                    }
+                  },
+                  {
+                    "transform": [
+                      {
+                        "filter": "datum.part == 'Unhealthy'"
+                      },
+                      {
+                        "filter": "indexof(['Ireland', 'European Union - 27 countries (from 2020)'], datum.country_name) >= 0 || datum.country_name == pick"
+                      }
+                    ],
+                    "mark": {
+                      "type": "text",
+                      "align": "right",
+                      "dx": -4,
+                      "fontSize": 11,
+                      "fontWeight": "bold"
+                    },
+                    "encoding": {
+                      "y": {
+                        "field": "country",
+                        "type": "nominal",
+                        "sort": {
+                          "op": "max",
+                          "field": "life_expectancy",
+                          "order": "descending"
+                        }
+                      },
+                      "x": {
+                        "field": "life_expectancy",
+                        "type": "quantitative"
+                      },
+                      "text": {
+                        "field": "unhealthy_years",
+                        "type": "quantitative",
+                        "format": ".1f"
+                      },
+                      "color": {
+                        "condition": [
+                          {
+                            "test": "datum.country_name == 'Ireland'",
+                            "value": "#0d6e4b"
+                          },
+                          {
+                            "test": "datum.country_name == 'European Union - 27 countries (from 2020)'",
+                            "value": "#3e4a5a"
+                          }
+                        ],
+                        "value": "#333333"
+                      }
+                    }
+                  },
+                  {
+                    "transform": [
+                      {
+                        "filter": "datum.part == 'Unhealthy'"
+                      },
+                      {
+                        "filter": "indexof(['Ireland', 'European Union - 27 countries (from 2020)'], datum.country_name) >= 0 || datum.country_name == pick"
+                      }
+                    ],
+                    "mark": {
+                      "type": "text",
+                      "align": "left",
+                      "dx": 4,
+                      "fontSize": 11,
+                      "fontWeight": "bold"
+                    },
+                    "encoding": {
+                      "y": {
+                        "field": "country",
+                        "type": "nominal",
+                        "sort": {
+                          "op": "max",
+                          "field": "life_expectancy",
+                          "order": "descending"
+                        }
+                      },
+                      "x": {
+                        "field": "life_expectancy",
+                        "type": "quantitative"
+                      },
+                      "text": {
+                        "field": "life_expectancy",
+                        "type": "quantitative",
+                        "format": ".1f"
+                      },
+                      "color": {
+                        "condition": [
+                          {
+                            "test": "datum.country_name == 'Ireland'",
+                            "value": "#1baf7a"
+                          },
+                          {
+                            "test": "datum.country_name == 'European Union - 27 countries (from 2020)'",
+                            "value": "#5b6b7f"
+                          }
+                        ],
+                        "value": "#444444"
+                      }
+                    }
+                  },
+                  {
+                    "transform": [
+                      {
+                        "filter": "datum.country_name == 'European Union - 27 countries (from 2020)' && datum.part == 'Healthy'"
+                      }
+                    ],
+                    "mark": {
+                      "type": "text",
+                      "y": -6,
+                      "align": "center",
+                      "fontSize": 11,
+                      "color": "#5b6b7f",
+                      "fontWeight": "bold"
+                    },
+                    "encoding": {
+                      "x": {
+                        "field": "life_expectancy",
+                        "type": "quantitative"
+                      },
+                      "text": {
+                        "value": "EU avg"
+                      }
+                    }
+                  }
+                ]
+              },
+              "config": {
+                "axis": {
+                  "labelFontSize": 12,
+                  "titleFontSize": 14,
+                  "grid": false
+                },
+                "view": {
+                  "stroke": null
+                },
+                "background": null
+              },
+              "params": [
+                {
+                  "name": "pick",
+                  "value": null
+                }
+              ]
+            };
+
+            // lifeExpVsHceOverTime.json
+            const lifeExpVsHceOverTime = {
+              "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+              "title": {
+                "text": [
+                  "Ireland Started Below the UK and US and Overtook Both,",
+                  "While Spending Less Than Half than the US"
+                ],
+                "subtitle": [
+                  "",
+                  "Each dot is one year. Dashed segments are 2019-2021 (Covid-19).",
+                  "The ringed dot is the year chosen on the slider.",
+                  ""
+                ],
+                "anchor": "start",
+                "fontSize": 15,
+                "subtitleFontSize": 12,
+                "subtitlePadding": 6
+              },
+              "data": {
+                "url": "https://raw.githubusercontent.com/annac-294/InfoVisDataSources/main/health_main.csv",
+                "format": {
+                  "type": "csv",
+                  "parse": {
+                    "year": "number",
+                    "spend_per_person_usd": "number",
+                    "life_expectancy": "number",
+                    "population": "number"
+                  }
+                }
+              },
+              "params": [
+                {
+                  "name": "pick",
+                  "value": null
+                },
+                {
+                  "name": "year_slider",
+                  "value": 2019
+                }
+              ],
+              "transform": [
+                {
+                  "filter": "datum.spend_per_person_usd > 0"
+                },
+                {
+                  "filter": "datum.life_expectancy > 0"
+                },
+                {
+                  "filter": "indexof(['Ireland', 'UK', 'US'], datum.label) >= 0 || datum.label == pick"
+                },
+                {
+                  "calculate": "indexof(['Ireland', 'UK', 'US'], datum.label) >= 0 ? datum.label : 'Your pick'",
+                  "as": "line_group"
+                }
+              ],
+              "width": 520,
+              "height": 280,
+              "encoding": {
+                "x": {
+                  "field": "spend_per_person_usd",
+                  "type": "quantitative",
+                  "scale": {
+                    "type": "log",
+                    "nice": false,
+                    "padding": 95
+                  },
+                  "axis": {
+                    "title": "Health spending per person (US$, log scale)",
+                    "format": "$,.0f",
+                    "values": [
+                      50,
+                      100,
+                      200,
+                      500,
+                      1000,
+                      2000,
+                      3000,
+                      5000,
+                      10000,
+                      15000
+                    ]
+                  }
+                },
+                "y": {
+                  "field": "life_expectancy",
+                  "type": "quantitative",
+                  "scale": {
+                    "zero": false,
+                    "nice": false,
+                    "padding": 15
+                  },
+                  "axis": {
+                    "title": "Life expectancy at birth (years)"
+                  }
+                },
+                "color": {
+                  "field": "line_group",
+                  "type": "nominal",
+                  "scale": {
+                    "domain": [
+                      "Ireland",
+                      "UK",
+                      "US",
+                      "Your pick"
+                    ],
+                    "range": [
+                      "#1baf7a",
+                      "#2a78d6",
+                      "#eb6834",
+                      "#444444"
+                    ]
+                  },
+                  "legend": null
+                }
+              },
+              "layer": [
+                {
+                  "transform": [
+                    {
+                      "filter": "datum.year <= 2019"
+                    }
+                  ],
+                  "mark": {
+                    "type": "line"
+                  },
+                  "encoding": {
+                    "order": {
+                      "field": "year",
+                      "type": "quantitative"
+                    }
+                  }
+                },
+                {
+                  "transform": [
+                    {
+                      "filter": "datum.year >= 2019"
+                    }
+                  ],
+                  "mark": {
+                    "type": "line",
+                    "strokeDash": [
+                      4,
+                      3
+                    ]
+                  },
+                  "encoding": {
+                    "order": {
+                      "field": "year",
+                      "type": "quantitative"
+                    }
+                  }
+                },
+                {
+                  "mark": {
+                    "type": "circle",
+                    "size": 50,
+                    "opacity": 1
+                  },
+                  "encoding": {
+                    "tooltip": [
+                      {
+                        "field": "label",
+                        "type": "nominal",
+                        "title": "Country"
+                      },
+                      {
+                        "field": "year",
+                        "type": "ordinal",
+                        "title": "Year"
+                      },
+                      {
+                        "field": "spend_per_person_usd",
+                        "type": "quantitative",
+                        "title": "Spend per person ($)",
+                        "format": ",.0f"
+                      },
+                      {
+                        "field": "life_expectancy",
+                        "type": "quantitative",
+                        "title": "Life expectancy",
+                        "format": ".1f"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "transform": [
+                    {
+                      "filter": "datum.year == year_slider"
+                    }
+                  ],
+                  "mark": {
+                    "type": "circle",
+                    "size": 260,
+                    "filled": false,
+                    "strokeWidth": 2.5,
+                    "opacity": 1
+                  }
+                },
+                {
+                  "transform": [
+                    {
+                      "filter": "datum.year == 2000"
+                    },
+                    {
+                      "calculate": "datum.label + ' 2000'",
+                      "as": "start_label"
+                    }
+                  ],
+                  "mark": {
+                    "type": "text",
+                    "align": "right",
+                    "dx": -8,
+                    "dy": 4,
+                    "fontWeight": "bold",
+                    "fontSize": 12,
+                    "stroke": "white",
+                    "strokeWidth": 4
+                  },
+                  "encoding": {
+                    "text": {
+                      "field": "start_label",
+                      "type": "nominal"
+                    },
+                    "color": {
+                      "value": "white"
+                    }
+                  }
+                },
+                {
+                  "transform": [
+                    {
+                      "filter": "datum.year == 2000"
+                    },
+                    {
+                      "calculate": "datum.label + ' 2000'",
+                      "as": "start_label"
+                    }
+                  ],
+                  "mark": {
+                    "type": "text",
+                    "align": "right",
+                    "dx": -8,
+                    "dy": 4,
+                    "fontWeight": "bold",
+                    "fontSize": 12
+                  },
+                  "encoding": {
+                    "text": {
+                      "field": "start_label",
+                      "type": "nominal"
+                    }
+                  }
+                },
+                {
+                  "transform": [
+                    {
+                      "filter": "datum.year == 2021"
+                    }
+                  ],
+                  "mark": {
+                    "type": "text",
+                    "align": "left",
+                    "dx": 8,
+                    "dy": 4,
+                    "fontWeight": "bold",
+                    "fontSize": 12,
+                    "stroke": "white",
+                    "strokeWidth": 4
+                  },
+                  "encoding": {
+                    "text": {
+                      "field": "year",
+                      "type": "nominal"
+                    }
+                  }
+                },
+                {
+                  "transform": [
+                    {
+                      "filter": "datum.year == 2021"
+                    }
+                  ],
+                  "mark": {
+                    "type": "text",
+                    "align": "left",
+                    "dx": 8,
+                    "dy": 4,
+                    "fontWeight": "bold",
+                    "fontSize": 12
+                  },
+                  "encoding": {
+                    "text": {
+                      "field": "year",
+                      "type": "nominal"
+                    }
+                  }
+                }
+              ],
+              "config": {
+                "axis": {
+                  "labelFontSize": 12,
+                  "titleFontSize": 14,
+                  "titlePadding": 10,
+                  "gridColor": "#eeeeee",
+                  "gridWidth": 0.5
+                },
+                "legend": {
+                  "labelFontSize": 12,
+                  "titleFontSize": 13
+                },
+                "view": {
+                  "stroke": null
+                },
+                "background": null
+              }
+            };
+
+            const views = [];
+
+            const pickBox = document.getElementById('pick');
+            const yearBox = document.getElementById('year');
+            
+            const pickable = new Set([...pickBox.options].map(o => o.value).filter(v => v));
+            
+            const fixed = new Set(['Ireland', 'UK', 'US', 'European Union - 27 countries (from 2020)', 'EU average']);
+            
+            function setPick(country) {
+                pickBox.value = country || '';
+                for(const view of views) {
+                    view.signal('pick', country || null).runAsync();
+                }
+            }
+            
+            function ensureOption(name){
+                if(pickable.has(name)) return;
+                let group = document.getElementById('clicked-group');
+                if(!group){
+                    group = document.createElement('optgroup');
+                    group.id = 'clicked-group';
+                    group.label = 'Clicked in a graph';
+                    pickBox.appendChild(group);
+                }
+                const opt = document.createElement('option');
+                opt.textContent = name;
+                group.appendChild(opt);
+                pickable.add(name);
+            }
+            
+            function onChartClick(event, item){
+                if(!item) { setPick(null); return;}
+                if(/^nopick/.test(item.mark.name || '')) return;
+                const d = item.datum || {};
+                let name;
+                if (typeof d.label === 'string') name = d.label;
+                else if (typeof d.country_name === 'string') name = d.country_name;
+                else if (typeof d.value === 'string') {
+                    name = d.value.replace(/ \*$/, '');
+                    if (!pickable.has(name)) return;
+                }
+                if (!name || fixed.has(name)) return;
+                ensureOption(name);
+                setPick(name);
+            }
+            
+            function addView(result){
+                views.push(result.view);
+                result.view.addEventListener('click', onChartClick);
+            }
+            
+            function setYear(year){
+                document.getElementById('year-value').textContent = year;
+                for(const view of views) {
+                    try{view.signal('year_slider', +year).runAsync();} catch (e) {}
+                }
+            }
+       
+            const opt = { actions: false };
+            vegaEmbed('#lifeExpVsHce',            lifeExpVsHce,                          opt).then(addView);
+            vegaEmbed('#actualVsExpectedLifeExp', actualVsExpectedLifeExp,               opt).then(addView);
+            vegaEmbed('#covidChanges',            covidChanges,                          opt).then(addView);
+            vegaEmbed('#irishHealthyVsLifeExp',   irishHealthyVsLifeExp,                 opt).then(addView);
+            vegaEmbed('#healthyVsUnhealthy',      healthyVsUnhealthy,                    opt).then(addView);
+            vegaEmbed('#lifeExpVsHceOverTime',    lifeExpVsHceOverTime,                  opt).then(addView);
+            
+            pickBox.onchange = () => setPick(pickBox.value);
+            document.getElementById('clear').onclick = () => setPick(null);
+            yearBox.oninput = () => setYear(yearBox.value);
+        </script>
+    </body>
+</html>
