@@ -1,0 +1,148 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "title": {
+    "text": "The US Lives 6.5 Years Less Than Its Spending Predicts",
+    "subtitle": [
+      "",
+      "Actual value minus expected life expectancy, 2019",
+      "Countries spending over $2,000 per person, with over 1 million people.",
+      "The expected line keeps rising, so it overestimates the biggest spenders.",  
+      ""
+    ],
+    "anchor": "start",
+    "fontSize": 15,
+    "subtitleFontSize":12,
+    "subtitlePadding": 6
+  },
+  "width": 330,
+  "height": 350,
+  "data": {
+    "url": "https://raw.githubusercontent.com/annac-294/InfoVisDataSources/main/health_main.csv",
+    "format": {
+      "type": "csv",
+      "parse": {
+        "year": "number",
+        "spend_per_person_usd": "number",
+        "population": "number",
+        "life_expectancy": "number",
+        "expected_life_expectancy": "number",
+        "years_vs_expected": "number"
+      }
+    }
+  },
+  "transform": [
+    {"filter": "datum.year == 2019"},
+    {"filter": "datum.spend_per_person_usd > 2000"},
+    {"filter": "datum.population >= 1000000"},
+    {"calculate": "max(datum.years_vs_expected, 0)", "as":"label_x"}      
+  ],
+  "layer": [
+    {
+      "mark": "bar",
+      "encoding": {
+        "y": {
+          "field": "label",
+          "type": "nominal",
+          "sort": {
+            "op": "mean",
+            "field": "years_vs_expected",
+            "order": "descending"
+          },
+          "axis": {"title": null}
+        },
+        "x": {
+          "field": "years_vs_expected",
+          "type": "quantitative",
+          "axis": {"title": "Years above (+) or below (-) expected"}
+        },
+        "color": {
+          "condition": [
+            {"test": "datum.label == 'Ireland'", "value": "#1baf7a"},
+            {"test": "datum.label == 'UK'", "value": "#2a78d6"},
+            {"test": "datum.label == 'US'", "value": "#eb6834"},
+            {"test": "datum.label== pick", "value": "#444444"}
+          ],
+          "value": "#bbbbbb"
+        },
+        "tooltip": [
+          {"field": "label", "type": "nominal", "title": "Country"},
+          {
+            "field": "life_expectancy",
+            "type": "quantitative",
+            "title": "Actual life expectancy",
+            "format": ".1f"
+          },
+          {
+            "field": "expected_life_expectancy",
+            "type": "quantitative",
+            "title": "Expected",
+            "format": ".1f"
+          },
+          {
+            "field": "years_vs_expected",
+            "type": "quantitative",
+            "title": "Difference (years)",
+            "format": "+.1f"
+          }
+        ]
+      }
+    },
+    {
+      "mark": {"type": "rule", "color": "black", "strokeWidth": 1.5},
+      "encoding": {"x": {"datum": 0}}
+    },
+    {
+        "mark": {
+            "type":"text",
+            "fontSize":12,
+            "fontWeight":"bold", 
+            "dx": 5, 
+            "align":"left"
+        }, 
+        "encoding": {
+            "y":{
+                "field":"label",
+                "type":"nominal",
+                "sort": {
+                    "op":"mean", 
+                    "field":"years_vs_expected", 
+                    "order":"descending"
+                }
+            }, 
+            "x": {
+                "field":"label_x", 
+                "type":"quantitative", 
+                "align":"left"
+            }, 
+            "text": {
+                "condition": {
+                    "test":"indexof(['Ireland', 'UK', 'US'], datum.label)>=0 || datum.label == pick", 
+                    "field": "years_vs_expected",
+                    "type":"quantitative", 
+                    "format": "+.1f"
+                }, "value": ""
+            }, 
+            "color":{
+                "condition": [
+                    {"test": "datum.label == 'Ireland'", "value": "#1baf7a"},
+                    {"test": "datum.label == 'UK'", "value": "#2a78d6"},
+                    {"test": "datum.label == 'US'", "value": "#eb6834"},
+                    {"test": "datum.label== pick", "value": "#444444"}
+                  ], "value": "#bbbbbb"
+            }
+        }
+    }
+  ],
+  "config": {
+    "axis": {
+      "labelFontSize": 12,
+      "titleFontSize": 14,
+      "titlePadding": 10,
+      "grid": false
+    },
+    "view": {"stroke": null}
+  },
+  "params":[
+    { "name":"pick", "value": null }
+   ]
+}

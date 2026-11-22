@@ -1,0 +1,430 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "title": {
+    "text": "Irish Women Outlive Men by 3.3 Years, but Most of the Extra Years Are Unhealthy",
+    "subtitle": [
+      "",
+      "Healthy (dark) + unhealthy (light) = life expectancy (overall bar), 2024.",
+      "Sorted by women's life expectancy.",
+      "Dashed lines: EU average healthy years and life expectancy, to compare every country against.",
+      "* Survey method changed in 2024 in this country; compare with care.",
+      ""
+    ],
+    "anchor": "start",
+    "fontSize": 15,
+    "subtitleFontSize": 12,
+    "subtitlePadding": 6
+  },
+  "data": {
+    "url": "https://raw.githubusercontent.com/annac-294/InfoVisDataSources/main/healthy_life_years.csv",
+    "format": {
+      "type": "csv",
+      "parse": {
+        "year": "number",
+        "healthy_life_years": "number",
+        "life_expectancy": "number"
+      }
+    }
+  },
+  "transform": [
+    {
+      "filter": "datum.year == 2024"
+    },
+    {
+      "filter": "datum.sex != 'Total'"
+    },
+    {
+      "filter": "datum.healthy_life_years > 0"
+    },
+    {
+      "calculate": "round((datum.life_expectancy - datum.healthy_life_years) * 10) / 10", "as": "unhealthy_years"
+    },
+    {
+      "calculate": "datum.sex == 'Females' ? 'Women' : 'Men'", "as": "sex_label"
+    },
+    {
+      "calculate": "datum.country_name == 'European Union - 27 countries (from 2020)' ? 'EU average' : datum.country_name", "as": "country"
+    },
+    {
+      "calculate": "datum.country_name == 'Ireland' ? 'Ireland' : datum.country == 'EU average' ? 'EU' : 'Other'",
+      "as": "highlight"
+    },
+    {
+      "calculate": "datum.series_break == 'True' ? datum.country + ' *' : datum.country","as": "country"
+    },
+    {
+      "fold": [
+        "healthy_life_years",
+        "unhealthy_years"
+      ],
+      "as": [
+        "part_column",
+        "years"
+      ]
+    },
+    {
+      "calculate": "datum.part_column == 'healthy_life_years' ? 'Healthy' : 'Unhealthy'", "as": "part"
+    },
+    {
+      "calculate": "datum.part_column == 'healthy_life_years' ? 1 : 2", "as": "part_order"
+    },
+    {
+      "calculate": "datum.highlight + ' ' + datum.part", "as": "colour_key"
+    }
+  ],
+  "facet": {
+    "column": {
+      "field": "sex_label",
+      "type": "nominal",
+      "sort": [
+        "Women",
+        "Men"
+      ],
+      "title": null,
+      "header": {
+        "labelFontSize": 14,
+        "labelFontWeight": "bold"
+      }
+    }
+  },
+  "spec": {
+    "width": 400,
+    "height": {
+      "step": 12
+    },
+    "layer": [
+      {
+        "transform": [
+          {
+            "filter": "datum.country_name == 'European Union - 27 countries (from 2020)' && datum.part == 'Healthy'"
+          }
+        ],
+        "mark": {
+          "type": "rule",
+          "strokeDash": [
+            4,
+            3
+          ],
+          "color": "#5b6b7f",
+          "strokeWidth": 1.2
+        },
+        "encoding": {
+          "x": {
+            "field": "healthy_life_years",
+            "type": "quantitative"
+          }
+        }
+      },
+      {
+        "transform": [
+          {
+            "filter": "datum.country_name == 'European Union - 27 countries (from 2020)' && datum.part == 'Healthy'"
+          }
+        ],
+        "mark": {
+          "type": "rule",
+          "strokeDash": [
+            4,
+            3
+          ],
+          "color": "#5b6b7f",
+          "strokeWidth": 1.2
+        },
+        "encoding": {
+          "x": {
+            "field": "life_expectancy",
+            "type": "quantitative"
+          }
+        }
+      },
+      {
+        "mark": "bar",
+        "encoding": {
+          "y": {
+            "field": "country",
+            "type": "nominal",
+            "sort": {
+              "op": "max",
+              "field": "life_expectancy",
+              "order": "descending"
+            },
+            "axis": {
+              "title": null,
+              "labelFontWeight": {
+                "expr": "datum.value == 'EU average' || datum.value == 'Ireland' ? 'bold' : 'normal'"
+              },
+              "labelColor": {
+                "expr": "datum.value == 'Ireland' ? '#1baf7a' : datum.value == 'EU average' ? '#5b6b7f' : '#333333'"
+              }
+            }
+          },
+          "x": {
+            "field": "years",
+            "type": "quantitative",
+            "scale": {
+              "domain": [
+                0,
+                90
+              ]
+            },
+            "axis": {
+              "title": "Years",
+              "values": [
+                0,
+                20,
+                40,
+                60,
+                80
+              ]
+            }
+          },
+          "color": {
+            "field": "colour_key",
+            "type": "nominal",
+            "scale": {
+              "domain": [
+                "Ireland Healthy",
+                "Ireland Unhealthy",
+                "EU Healthy",
+                "EU Unhealthy",
+                "Other Healthy",
+                "Other Unhealthy"
+              ],
+              "range": [
+                "#1baf7a",
+                "#a9dfc8",
+                "#5b6b7f",
+                "#c3ccd6",
+                "#444444",
+                "#bbbbbb"
+              ]
+            },
+            "legend": null
+          },
+          "opacity": {
+            "condition": [
+              {
+                "test": "datum.highlight != 'Other'",
+                "value": 1
+              },
+              {
+                "test": "datum.country_name == pick",
+                "value": 1
+              }
+            ],
+            "value": 0.3
+          },
+          "order": {
+            "field": "part_order",
+            "type": "quantitative"
+          },
+          "tooltip": [
+            {
+              "field": "country",
+              "type": "nominal",
+              "title": "Country"
+            },
+            {
+              "field": "sex_label",
+              "type": "nominal",
+              "title": "Sex"
+            },
+            {
+              "field": "healthy_life_years",
+              "type": "quantitative",
+              "title": "Healthy years",
+              "format": ".1f"
+            },
+            {
+              "field": "unhealthy_years",
+              "type": "quantitative",
+              "title": "Unhealthy years",
+              "format": ".1f"
+            },
+            {
+              "field": "life_expectancy",
+              "type": "quantitative",
+              "title": "Life expectancy",
+              "format": ".1f"
+            }
+          ]
+        }
+      },
+      {
+        "transform": [
+          {
+            "filter": "datum.part == 'Healthy'"
+          },
+          {
+            "filter": "indexof(['Ireland', 'European Union - 27 countries (from 2020)'], datum.country_name) >= 0 || datum.country_name == pick"
+          }
+        ],
+        "mark": {
+          "type": "text",
+          "align": "right",
+          "dx": -4,
+          "fontSize": 11,
+          "fontWeight": "bold",
+          "color": "white"
+        },
+        "encoding": {
+          "y": {
+            "field": "country",
+            "type": "nominal",
+            "sort": {
+              "op": "max",
+              "field": "life_expectancy",
+              "order": "descending"
+            }
+          },
+          "x": {
+            "field": "healthy_life_years",
+            "type": "quantitative"
+          },
+          "text": {
+            "field": "healthy_life_years",
+            "type": "quantitative",
+            "format": ".1f"
+          }
+        }
+      },
+      {
+        "transform": [
+          {
+            "filter": "datum.part == 'Unhealthy'"
+          },
+          {
+            "filter": "indexof(['Ireland', 'European Union - 27 countries (from 2020)'], datum.country_name) >= 0 || datum.country_name == pick"
+          }
+        ],
+        "mark": {
+          "type": "text",
+          "align": "right",
+          "dx": -4,
+          "fontSize": 11,
+          "fontWeight": "bold"
+        },
+        "encoding": {
+          "y": {
+            "field": "country",
+            "type": "nominal",
+            "sort": {
+              "op": "max",
+              "field": "life_expectancy",
+              "order": "descending"
+            }
+          },
+          "x": {
+            "field": "life_expectancy",
+            "type": "quantitative"
+          },
+          "text": {
+            "field": "unhealthy_years",
+            "type": "quantitative",
+            "format": ".1f"
+          },
+          "color": {
+            "condition": [
+              {
+                "test": "datum.country_name == 'Ireland'",
+                "value": "#0d6e4b"
+              },
+              {
+                "test": "datum.country_name == 'European Union - 27 countries (from 2020)'",
+                "value": "#3e4a5a"
+              }
+            ],
+            "value": "#333333"
+          }
+        }
+      },
+      {
+        "transform": [
+          {
+            "filter": "datum.part == 'Unhealthy'"
+          },
+          {
+            "filter": "indexof(['Ireland', 'European Union - 27 countries (from 2020)'], datum.country_name) >= 0 || datum.country_name == pick"
+          }
+        ],
+        "mark": {
+          "type": "text",
+          "align": "left",
+          "dx": 4,
+          "fontSize": 11,
+          "fontWeight": "bold"
+        },
+        "encoding": {
+          "y": {
+            "field": "country",
+            "type": "nominal",
+            "sort": {
+              "op": "max",
+              "field": "life_expectancy",
+              "order": "descending"
+            }
+          },
+          "x": {
+            "field": "life_expectancy",
+            "type": "quantitative"
+          },
+          "text": {
+            "field": "life_expectancy",
+            "type": "quantitative",
+            "format": ".1f"
+          },
+          "color": {
+            "condition": [
+              {
+                "test": "datum.country_name == 'Ireland'",
+                "value": "#1baf7a"
+              },
+              {
+                "test": "datum.country_name == 'European Union - 27 countries (from 2020)'",
+                "value": "#5b6b7f"
+              }
+            ],
+            "value": "#444444"
+          }
+        }
+      },
+      {
+        "transform": [
+         {
+            "filter": "datum.country_name == 'European Union - 27 countries (from 2020)' && datum.part == 'Healthy'"
+         }
+        ],
+        "mark": {
+          "type": "text",
+          "y": -6,
+          "align": "center",
+          "fontSize": 11,
+          "color": "#5b6b7f",
+          "fontWeight": "bold"
+        },
+        "encoding": {
+          "x": {
+            "field": "life_expectancy",
+            "type": "quantitative"
+          },
+          "text": {
+            "value": "EU avg"
+          }
+        }
+      }
+    ]
+  },
+  "config": {
+    "axis": {
+      "labelFontSize": 12,
+      "titleFontSize": 14,
+      "grid": false
+    },
+    "view": {
+      "stroke": null
+    },
+    "background": null
+  },
+  "params": [{ "name": "pick", "value": null }
+  ]
+}

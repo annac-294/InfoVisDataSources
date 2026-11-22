@@ -1,0 +1,214 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "title": {
+    "text": ["US Life Expectancy Fell 1.9 Years from 2019 to 2021", 
+    "whereas Ireland's Fell 0.3"
+    ],
+    "subtitle": [
+      "",
+      "Life expectancy at birth for 2019 and 2021.",
+      "Based on countries spending over $2,000 per person, with over 1 million people.",
+      ""
+    ],
+    "anchor": "start",
+    "fontSize": 15, 
+    "subtitleFontSize": 12, 
+    "subtitlePadding": 6
+  },
+  "width": 360,
+  "height": 280,
+  "data": {
+    "url": "https://raw.githubusercontent.com/annac-294/InfoVisDataSources/main/health_main.csv",
+    "format": {
+      "type": "csv",
+      "parse": {
+        "year": "number",
+        "spend_per_person_usd": "number",
+        "population": "number",
+        "life_expectancy": "number"
+      }
+    }
+  },
+  "transform": [
+    {"filter": "datum.year == 2019 || datum.year == 2021"},
+    {
+      "calculate": "datum.year == 2019 ? datum.spend_per_person_usd : 0",
+      "as": "spend_2019"
+    },
+    {
+      "calculate": "datum.year == 2019 ? datum.life_expectancy : 0",
+      "as": "le_2019"
+    },
+    {
+      "joinaggregate": [
+        {"op": "max", "field": "spend_2019", "as": "spend_2019_max"},
+        {"op": "max", "field": "population", "as": "population_max"},
+        {"op": "max", "field": "le_2019", "as": "le_2019_max"}
+      ],
+      "groupby": ["label"]
+    },
+    {"filter": "datum.spend_2019_max > 2000"},
+    {"filter": "datum.population_max >= 1000000"},
+    {
+      "calculate": "datum.life_expectancy - datum.le_2019_max",
+      "as": "covid_change"
+    },
+    {
+      "calculate": "datum.year == 2019 ? '2019 (before Covid-19)' : '2021'",
+      "as": "period"
+    }
+  ],
+  "encoding": {
+    "x": {
+      "field": "period",
+      "type": "ordinal",
+      "sort": ["2019 (before Covid-19)", "2021"],
+      "scale": {"padding": 0.5},
+      "axis": {
+        "title": null,
+        "labelAngle": 0,
+        "labelFontSize": 13,
+        "labelFontWeight": "bold",
+        "orient": "top",
+        "domain": false,
+        "ticks": false,
+        "labelLimit": 250
+      }
+    },
+    "y": {
+      "field": "life_expectancy",
+      "type": "quantitative",
+      "scale": {"domain": [75, 85]},
+      "axis": {"title": "Life expectancy at birth (years, axis starts at 75)"}
+    },
+    "color": {
+      "condition": [
+        {"test": "datum.label == 'Ireland'", "value": "#1baf7a"},
+        {"test": "datum.label == 'UK'", "value": "#2a78d6"},
+        {"test": "datum.label == 'US'", "value": "#eb6834"},
+        {"test": "datum.label== pick", "value": "#444444"}
+      ],
+      "value": "#d9d9d9"
+    }
+  },
+  "layer": [
+    {
+      "mark": {"type": "line", "strokeWidth": 1},
+      "encoding": {
+        "detail": {"field": "label", "type": "nominal"},
+        "tooltip": [
+          {"field": "label", "type": "nominal", "title": "Country"},
+          {
+            "field": "covid_change",
+            "type": "quantitative",
+            "title": "Change since 2019 (years)",
+            "format": "+.1f"
+          }
+        ]
+      }
+    },
+    {
+      "mark": {"type": "circle", "size": 30, "opacity": 1},
+      "encoding": {
+        "tooltip": [
+          {"field": "label", "type": "nominal", "title": "Country"},
+          {"field": "year", "type": "ordinal", "title": "Year"},
+          {
+            "field": "life_expectancy",
+            "type": "quantitative",
+            "title": "Life expectancy",
+            "format": ".1f"
+          },
+          {
+            "field": "covid_change",
+            "type": "quantitative",
+            "title": "Change since 2019 (years)",
+            "format": "+.1f"
+          }
+        ]
+      }
+    },
+    {
+      "transform": [
+        {
+          "filter": "indexof(['Ireland', 'UK', 'US'], datum.label)>=0 || datum.label == pick"
+        }
+      ],
+      "mark": {"type": "line", "strokeWidth": 3},
+      "encoding": {"detail": {"field": "label", "type": "nominal"}}
+    },
+    {
+      "mark": {"type": "circle", "size": 60, "opacity": 1},
+      "encoding": {
+        "tooltip": [
+          {"field": "label", "type": "nominal", "title": "Country"},
+          {"field": "year", "type": "ordinal", "title": "Year"},
+          {
+            "field": "life_expectancy",
+            "type": "quantitative",
+            "title": "Life expectancy",
+            "format": ".1f"
+          },
+          {
+            "field": "covid_change",
+            "type": "quantitative",
+            "title": "Change since 2019 (years)",
+            "format": "+.1f"
+          }
+        ]
+      },
+      "transform": [
+        {
+          "filter": "indexof(['Ireland', 'UK', 'US'], datum.label)>=0 || datum.label == pick"
+        }
+      ]
+    },
+    {
+      "transform": [
+        {"filter": "datum.year == 2019"},
+        {
+          "filter": "indexof(['Ireland', 'UK', 'US'], datum.label)>=0 || datum.label == pick"
+        },
+        {
+          "calculate": "datum.label + '  ' + format(datum.life_expectancy, '.1f')",
+          "as": "start_label"
+        }
+      ],
+      "mark": {
+        "type": "text",
+        "align": "right",
+        "dx": -10,
+        "fontSize": 12,
+        "fontWeight": "bold"
+      },
+      "encoding": {"text": {"field": "start_label", "type": "nominal"}}
+    },
+    {
+      "transform": [
+        {"filter": "datum.year == 2021"},
+        {
+          "filter": "indexof(['Ireland', 'UK', 'US'], datum.label)>=0 || datum.label == pick"
+        },
+        {
+          "calculate": "format(datum.life_expectancy, '.1f') + '  (' + format(datum.covid_change, '+.1f') + ')'",
+          "as": "end_label"
+        }
+      ],
+      "mark": {
+        "type": "text",
+        "align": "left",
+        "dx": 10,
+        "fontSize": 12,
+        "fontWeight": "bold"
+      },
+      "encoding": {"text": {"field": "end_label", "type": "nominal"}}
+    }
+  ],
+  "config": {
+    "axis": {"labelFontSize": 12, "titleFontSize": 14, "titlePadding": 10},
+    "axisX": {"grid": false},
+    "view": {"stroke": null},
+    "axisY": {"grid": false}
+  },
+  "params": [{"name" : "pick", "value" : null}]
+}

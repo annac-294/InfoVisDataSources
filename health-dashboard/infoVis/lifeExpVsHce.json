@@ -1,0 +1,542 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "title": {
+    "text": "More Spending, Longer Lives, But Each Extra Year Costs More",
+    "subtitle": [
+      "",
+      "Each dot is a country. The line shows the life expectancy for each level of spending (2019).",
+      "Spending is on a log scale, so each step to the right doubles spending.",
+      ""
+    ],
+    "anchor": "start",
+    "fontSize": 15, 
+    "subtitleFontSize": 12, 
+    "subtitlePadding": 6
+  },
+  "data": {
+    "url": "https://raw.githubusercontent.com/annac-294/InfoVisDataSources/main/health_main.csv",
+    "format": {
+      "type": "csv",
+      "parse": {
+        "year": "number",
+        "spend_per_person_usd": "number",
+        "life_expectancy": "number",
+        "population": "number",
+        "expected_life_expectancy": "number"
+      }
+    }
+  },
+  "params": [
+      {
+        "name": "pick", "value":null
+      },
+      {
+        "name": "year_slider",
+        "value": 2019
+      }
+  ],
+  "transform": [
+    {"filter": "datum.year == year_slider"},
+    {"filter": "datum.spend_per_person_usd > 0"},
+    {"filter": "datum.life_expectancy > 0"},
+    {
+      "calculate": "datum.label + ' (' + datum.year + '):  $' + format(datum.spend_per_person_usd, ',.0f') + ' per person on health,  life expectancy ' + format(datum.life_expectancy, '.1f') + ' years'",
+      "as": "readout"
+    }
+  ],
+  "vconcat": [
+    {
+      "width": 560,
+      "height": 270,
+      "layer": [
+        {
+          "mark": {"type": "circle", "size": 80},
+          "encoding": {
+            "x": {
+              "field": "spend_per_person_usd",
+              "type": "quantitative",
+              "scale": {"type": "log", "domain": [4, 20000] },
+              "axis": {
+                "title": "Health spending per person (US$, log scale)",
+                "format": "$,.0f",
+                "values": [5, 10, 30, 100, 300, 1000, 3000, 10000]
+              }
+            },
+            "y": {
+              "field": "life_expectancy",
+              "type": "quantitative",
+              "scale": {"domain": [40, 90]},
+              "axis": {"title": "Life expectancy at birth (years)"}
+            },
+            "color": {
+              "condition": [
+                {"test": "datum.label == 'Ireland'", "value": "#1baf7a"},
+                {"test": "datum.label == 'UK'", "value": "#2a78d6"},
+                {"test": "datum.label == 'US'", "value": "#eb6834"},
+                {"test": "datum.label== pick", "value": "#444444"}
+              ],
+              "value": "#bbbbbb"
+            },
+            "opacity": {
+              "condition": [
+                { "test": "indexof(['Ireland', 'UK', 'US'], datum.label) >= 0", "value": 1
+                },
+                {"test": "datum.label== pick", "value": 1}
+              ],
+              "value": 0.5
+            },
+            "order": {
+              "condition": [
+                {"test": "datum.label == 'Ireland'", "value": 4},
+                { "test": "datum.label == 'UK' || datum.label == 'US'", "value": 3
+                },
+                {"test": "datum.label== pick", "value": 2}
+              ],
+              "value": 1
+            },
+            "tooltip": [
+              {"field": "label", "type": "nominal", "title": "Country"},
+              {"field": "year", "type": "ordinal", "title": "Year"},
+              {
+                "field": "spend_per_person_usd",
+                "type": "quantitative",
+                "title": "Spend per person ($)",
+                "format": ",.0f"
+              },
+              {
+                "field": "life_expectancy",
+                "type": "quantitative",
+                "title": "Life expectancy",
+                "format": ".1f"
+              }
+            ]
+          }
+        },
+        {
+          "transform": [{"filter": "datum.expected_life_expectancy > 0"}],
+          "mark": {
+            "type": "line",
+            "color": "#444444",
+            "strokeWidth": 2,
+            "opacity": 0.7
+          },
+          "encoding": {
+            "x": {"field": "spend_per_person_usd", "type": "quantitative"},
+            "y": {"field": "expected_life_expectancy", "type": "quantitative"},
+            "order": {"field": "spend_per_person_usd", "type": "quantitative"}
+          },
+          "name":"nopick_line"
+        },
+        {
+           "name":"nopick_label",
+           "data":{
+               "values":[{}]
+           },
+           "transform": [
+               {"filter": "year_slider == 2019"}
+           ], 
+            "mark" : {"type":"text", "align":"right", "dy": 0, "fontSize": 12, "fontWeight": "bold", "color": "#444444", "baseline":"middle", "dx":-6 },
+            "encoding": {
+              "x": {"datum":15},
+              "y": {"datum":60},
+              "text": {"value": "Expected"}
+            }
+        },
+        {
+          "data": {"values": [
+            {"x": 30, "x2": 60, "y": 62.42, "y2": 62.42},
+            {"x": 60, "x2": 60, "y": 62.42, "y2": 65.09}
+          ]},
+          "transform": [{"filter": "year_slider == 2019"}],
+          "mark": {"type": "rule", "color": "#1f2a37", "strokeWidth": 2},
+          "encoding": {
+            "x": {"field": "x", "type": "quantitative"},
+            "x2": {"field": "x2"},
+            "y": {"field": "y", "type": "quantitative"},
+            "y2": {"field": "y2"}
+          }
+        },
+        {
+          "data": {
+            "values": [
+              {
+                "x": 30,
+                "x2": 60,
+                "y": 62.42,
+                "y2": 62.42
+              },
+              {
+                "x": 60,
+                "x2": 60,
+                "y": 62.42,
+                "y2": 65.09
+              }
+            ]
+          },
+          "transform": [
+            {"filter": "year_slider == 2019"}
+          ],
+          "mark": {
+            "type": "rule",
+            "color": "#1f2a37",
+            "strokeWidth": 2
+          },
+          "encoding": {
+            "x": {
+              "field": "x",
+              "type": "quantitative"
+            },
+            "x2": {
+              "field": "x2"
+            },
+            "y": {
+              "field": "y",
+              "type": "quantitative"
+            },
+            "y2": {
+              "field": "y2"
+            }
+          }
+        },
+        {
+          "data": {
+            "values": [
+              {"x": 60,"y": 62.42}
+            ]
+          },
+          "transform": [
+            {"filter": "year_slider == 2019"}
+          ],
+          "mark": {
+            "type": "text",
+            "align": "center",
+            "baseline": "middle",
+            "dx": -57,
+            "dy": -57,
+            "fontSize": 12,
+            "fontWeight": "bold",
+            "color": "#1f2a37",
+            "lineBreak": "\n",
+            "stroke": "white",
+            "strokeWidth": 3,
+            "strokeOpacity": 0.9
+          },
+          "encoding": {
+            "x": {
+              "field": "x",
+              "type": "quantitative"
+            },
+            "y": {
+              "field": "y",
+              "type": "quantitative"
+            },
+            "text": {"value": "$30 to $60\n= +2.7 years"}
+          }
+        },
+        {
+          "data": {
+            "values": [
+              {"x": 60,"y": 62.42}
+            ]
+          },
+          "transform": [
+            {"filter": "year_slider == 2019"}
+          ],
+          "mark": {
+            "type": "text",
+            "align": "center",
+            "baseline": "middle",
+            "dx": -57,
+            "dy": -57,
+            "fontSize": 12,
+            "fontWeight": "bold",
+            "color": "#1f2a37",
+            "lineBreak": "\n"
+          },
+          "encoding": {
+            "x": {
+              "field": "x",
+              "type": "quantitative"
+            },
+            "y": {
+              "field": "y",
+              "type": "quantitative"
+            },
+            "text": {"value": "$30 to $60\n= +2.7 years"}
+          }
+        },
+        {
+          "data": {
+            "values": [
+              {
+                "x": 500,
+                "x2": 1000,
+                "y": 73.23,
+                "y2": 73.23
+              },
+              {
+                "x": 1000,
+                "x2": 1000,
+                "y": 73.23,
+                "y2": 75.9
+              }
+            ]
+          },
+          "transform": [
+            {"filter": "year_slider == 2019"}
+          ],
+          "mark": {
+            "type": "rule",
+            "color": "#1f2a37",
+            "strokeWidth": 2
+          },
+          "encoding": {
+            "x": {
+              "field": "x",
+              "type": "quantitative"
+            },
+            "x2": {
+              "field": "x2"
+            },
+            "y": {
+              "field": "y",
+              "type": "quantitative"
+            },
+            "y2": {
+              "field": "y2"
+            }
+          }
+        },
+        {
+          "data": {
+            "values": [
+              {"x": 1000,"y": 73.23}
+            ]
+          },
+          "transform": [
+            {"filter": "year_slider == 2019" }
+          ],
+          "mark": {
+            "type": "text",
+            "align": "center",
+            "baseline": "middle",
+            "dx": -38,
+            "dy": -66,
+            "fontSize": 12,
+            "fontWeight": "bold",
+            "color": "#1f2a37",
+            "lineBreak": "\n",
+            "stroke": "white",
+            "strokeWidth": 3,
+            "strokeOpacity": 0.9
+          },
+          "encoding": {
+            "x": {
+              "field": "x",
+              "type": "quantitative"
+            },
+            "y": {
+              "field": "y",
+              "type": "quantitative"
+            },
+            "text": {
+              "value": "$500 to $1,000\n= +2.7 years"
+            }
+          }
+        },
+        {
+          "data": {
+            "values": [
+              {"x": 1000,"y": 73.23}
+            ]
+          },
+          "transform": [
+            {"filter": "year_slider == 2019"}
+          ],
+          "mark": {
+            "type": "text",
+            "align": "center",
+            "baseline": "middle",
+            "dx": -38,
+            "dy": -66,
+            "fontSize": 12,
+            "fontWeight": "bold",
+            "color": "#1f2a37",
+            "lineBreak": "\n"
+          },
+          "encoding": {
+            "x": {
+              "field": "x",
+              "type": "quantitative"
+            },
+            "y": {
+              "field": "y",
+              "type": "quantitative"
+            },
+            "text": {
+              "value": "$500 to $1,000\n= +2.7 years"
+            }
+          }
+        },
+        {
+          "data": {"values": [{}]},
+          "mark": {"type": "rule", "strokeDash": [4, 4], "color": "grey"},
+          "encoding": {"x": {"datum": 2000}}
+        },
+        {
+          "data": {"values": [{}]},
+          "mark": {
+            "type": "text",
+            "align": "left",
+            "dx": 6,
+            "fontSize": 12,
+            "color": "grey",
+            "lineBreak": "\n"
+          },
+          "encoding": {
+            "x": {"datum": 2000},
+            "y": {"datum": 48},
+            "text": {"value": "Above $2,000 per person (for next charts):\n24 of 29 countries live 80-85 years"}
+          }
+        },
+        {
+          "transform": [
+            {
+              "filter": "datum.label == pick"
+            },
+            {
+              "filter": "indexof(['Ireland', 'UK', 'US'], datum.label) < 0"
+            }
+          ],
+          "mark": {
+            "type": "text",
+            "align": "left",
+            "dx": 7,
+            "dy": -8,
+            "fontSize": 12,
+            "fontWeight": "bold",
+            "color": "#444444"
+          },
+          "encoding": {
+            "x": {
+              "field": "spend_per_person_usd",
+              "type": "quantitative"
+            },
+            "y": {
+              "field": "life_expectancy",
+              "type": "quantitative"
+            },
+            "text": {
+              "field": "label",
+              "type": "nominal"
+            }
+          }
+        },
+        {
+          "transform": [
+            {"filter": "datum.label == 'Ireland'"}
+          ],
+          "mark": {
+            "type": "text",
+            "align": "center",
+            "baseline":"middle",
+            "dx": 5,
+            "dy": 18,
+            "fontSize": 12,
+            "fontWeight": "bold",
+            "color": "#1baf7a"
+          },
+          "encoding": {
+            "x": {"field": "spend_per_person_usd", "type": "quantitative"},
+            "y": {"field": "life_expectancy", "type": "quantitative"},
+            "text": {"field": "label", "type": "nominal"}
+          }
+        },
+          {
+          "transform": [
+            {"filter": "datum.label == 'UK'"}
+          ],
+          "mark": {
+            "type": "text",
+            "align": "center",
+            "baseline":"middle",
+            "dx": 4,
+            "dy": -20,
+            "fontSize": 12,
+            "fontWeight": "bold",
+            "color": "#2a78d6"
+          },
+          "encoding": {
+            "x": {"field": "spend_per_person_usd", "type": "quantitative"},
+            "y": {"field": "life_expectancy", "type": "quantitative"},
+            "text": {"field": "label", "type": "nominal"}
+          }
+        },
+          {
+          "transform": [
+            {"filter": "datum.label == 'US'"}
+          ],
+          "mark": {
+            "type": "text",
+            "align": "center",
+            "baseline":"middle",
+            "dx": 15,
+            "dy":0,
+            "fontSize": 12,
+            "fontWeight": "bold",
+            "color": "#eb6834"
+          },
+          "encoding": {
+            "x": {"field": "spend_per_person_usd", "type": "quantitative"},
+            "y": {"field": "life_expectancy", "type": "quantitative"},
+            "text": {"field": "label", "type": "nominal"}
+          }
+        }
+      ]
+    },
+    {
+      "width": 560,
+      "height": 44,
+      "layer": [
+        {
+          "transform": [{"filter": "datum.label == 'Ireland'"}],
+          "mark": {
+            "type": "text",
+            "align": "left",
+            "x": 0,
+            "y": 10,
+            "fontSize": 14,
+            "fontWeight": "bold",
+            "color": "#1baf7a"
+          },
+          "encoding": {"text": {"field": "readout", "type": "nominal"}}
+        },
+        {
+          "transform": [
+            {"filter": "datum.label == pick"}
+          ],
+          "mark": {
+            "type": "text",
+            "align": "left",
+            "x": 0,
+            "y": 34,
+            "fontSize": 14,
+            "fontWeight": "bold",
+            "color": "#444444"
+          },
+          "encoding": {"text": {"field": "readout", "type": "nominal"}}
+        }
+      ]
+    }
+  ],
+  "config": {
+    "axis": {
+      "labelFontSize": 12,
+      "titleFontSize": 14,
+      "titlePadding": 10,
+      "gridColor": "#eeeeee",
+      "gridWidth": 0.5
+    },
+    "view": {"stroke": null}
+  }
+}
